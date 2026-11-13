@@ -1,70 +1,59 @@
-# Getting Started with Create React App
+# UDU cinematic — Đề 1: Đặt vé xem phim
+1) Frontend
+## Cấu trúc
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```text
+10_LTW_CuoiKy/
+├── client/                  Toàn bộ frontend
+│   ├── public/              Ảnh, font, tài nguyên tĩnh
+│   ├── src/
+│   │   ├── pages/           Trang chủ, phim, tài khoản, vé
+│   │   ├── admin/           Giao diện quản trị
+│   │   ├── App.js           Khai báo route
+│   │   ├── auth.js          Mô phỏng đăng ký/đăng nhập cục bộ
+│   │   ├── context.js       Tài khoản và dữ liệu dùng chung
+│   │   ├── store.js         Redux Toolkit lưu ghế đang chọn
+│   │   └── booking.js       Sơ đồ ghế, tính tiền, xác nhận
+│   └── package.json
+├── server/                  Thư mục chờ cho giai đoạn backend
+├── docs/                    Hướng dẫn đọc code và đối chiếu đề
+└── package.json             Lệnh chạy frontend từ thư mục gốc
+```
 
-## Available Scripts
+## Cài và chạy frontend
 
-In the project directory, you can run:
+Cần Node.js 22+ và npm. Nếu dùng NVM, chọn phiên bản Node đã cài trước. Mở terminal ở thư mục gốc:
 
-### `npm start`
+```bash
+npm --prefix client ci --legacy-peer-deps
+npm start
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Mở http://localhost:3000. Chỉ cần một terminal, không cần khởi động server hoặc seed backend.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+npm test
+npm run build
+npm --prefix client run preview
+```
 
-### `npm test`
+Bản build ở `client/build/`; preview tại http://localhost:5300. Khi đưa lên hosting, cấu hình rewrite các route của SPA về `index.html`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Tài khoản mẫu trên trình duyệt
 
-### `npm run build`
+| Vai trò | Email | Mật khẩu |
+| --- | --- | --- |
+| Quản trị | admin@udu.example | Admin@12345 |
+| Thành viên | member@udu.example | Member@12345 |
+| Khách | Không cần tài khoản | Không cần đăng nhập |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Tài khoản mẫu tự có khi dùng chức năng tài khoản, không cần script seed. Đăng ký email mới luôn tạo **thành viên** rồi đăng nhập ngay. Admin dùng cùng form đăng nhập, không chọn vai trò. Đăng xuất đưa về trạng thái khách.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Tài khoản lưu ở localStorage (`udu-accounts`), phiên đăng nhập lưu mã tài khoản ở sessionStorage (`udu-session`). Tải lại cùng tab giữ phiên; đóng tab kết thúc phiên. Mật khẩu đăng ký được băm bằng Web Crypto/PBKDF2 thay vì lưu rõ.
+## Chức năng theo vai trò
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Khách:** danh sách đang/sắp chiếu, tìm tên, lọc thể loại/ngày, chi tiết phim, trailer YouTube, thời lượng và suất chiếu.
+- **Thành viên:** quyền khách; chọn suất và ghế thường/VIP (tối đa 8), xem tổng tiền, xác nhận vé, lịch sử vé riêng và hủy khi còn ít nhất 2 giờ trước suất chiếu.
+- **Quản trị:** giao diện quản lý phim, phòng (hàng/cột/hàng VIP), suất chiếu có kiểm tra chồng giờ, doanh thu theo phim/ngày.
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Trang chủ có phim tiêu điểm và một số phim gợi ý; trang Phim có danh sách đầy đủ và bộ lọc. Các dòng footer theo ảnh yêu cầu và nút nhập vai đã được bỏ.

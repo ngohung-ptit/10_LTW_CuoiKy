@@ -1,0 +1,757 @@
+
+@media (max-width: 1199px) {
+  :root {
+    --gut: 40px;
+  }
+  .nav-links {
+    gap: 20px;
+  }
+  .nav-actions {
+    gap: 12px;
+  }
+  .movie-meta {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .movie-card h3 {
+    font-size: 20px;
+  }
+  .booking-layout {
+    grid-template-columns: 1fr 310px;
+    gap: 24px;
+  }
+  .seat-panel {
+    padding: 20px;
+  }
+  .seat-row {
+    gap: 8px;
+  }
+  .seat-row-buttons {
+    gap: 5px;
+  }
+  .summary-total strong {
+    font-size: 24px;
+  }
+  .schedule-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .schedule-tools .search-field {
+    width: 100%;
+  }
+  .auth-layout {
+    gap: 48px;
+  }
+  .room-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 1023px) {
+  .nav-links .mobile-account { display: flex !important; justify-content: flex-start; text-align: left; }
+  :root {
+    --gut: 32px;
+    --nav: 72px;
+  }
+  .nav-links {
+    display: none;
+  }
+  .menu-button {
+    display: inline-flex;
+  }
+  .nav-links.is-open {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    top: var(--nav);
+    inset-inline: 0;
+    bottom: 0;
+    height: auto;
+    background: var(--bg);
+    padding: 32px;
+  }
+  .nav-links.is-open > a {
+    height: 64px;
+    flex-shrink: 0;
+    font-size: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-links > a.active:after {
+    display: none;
+  }
+  .movie-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 24px;
+  }
+  .movie-meta {
+    flex-direction: row;
+  }
+  .section-heading h2 {
+    font-size: 32px;
+  }
+  .site-footer {
+    padding-top: 40px;
+  }
+  .footer-links {
+    flex-direction: column;
+    align-items: start;
+    gap: 20px;
+  }
+  .footer-bottom {
+    flex-wrap: wrap;
+    justify-content: start;
+  }
+  .movie-detail {
+    grid-template-columns: 230px 1fr;
+    gap: 32px;
+  }
+  .detail-copy {
+    padding-top: 0;
+  }
+  .detail-copy h1 {
+    font-size: 38px;
+  }
+  .detail-facts {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-block: 20px;
+  }
+  .detail-subtitle {
+    font-size: 18px;
+  }
+  .synopsis {
+    font-size: 15px;
+  }
+  .movie-credits {
+    grid-template-columns: 70px 1fr;
+    font-size: 13px;
+    gap: 8px 16px;
+  }
+  .btn-row {
+    flex-wrap: wrap;
+  }
+  .schedule-row {
+    grid-template-columns: 96px 1fr;
+  }
+  .schedule-row .showtime-groups,
+  .schedule-row > .no-shows {
+    grid-column: 2;
+  }
+  .booking-layout {
+    grid-template-columns: 1fr;
+  }
+  .booking-summary {
+    max-width: none;
+  }
+  .summary-details {
+    grid-template-columns: 1fr 1fr;
+  }
+  .summary-movie img {
+    width: 60px;
+    height: 90px;
+  }
+  .booking-title h1 {
+    font-size: 36px;
+  }
+  .hold-timer > span {
+    display: none;
+  }
+  .seat-row-buttons {
+    gap: 10px;
+  }
+  .seat-panel {
+    padding: 32px;
+  }
+  .seat {
+    height: 38px;
+  }
+  .auth-layout {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+  }
+  .auth-visual {
+    display: none;
+  }
+  .auth-form {
+    max-width: none;
+  }
+  .ticket-card {
+    grid-template-columns: 90px 1fr;
+  }
+  .ticket-card > img {
+    width: 90px;
+  }
+  .ticket-stub {
+    display: none;
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-revenue {
+    grid-template-columns: 1fr;
+  }
+  .admin-heading {
+    align-items: start;
+  }
+  .admin-heading .page-heading {
+    max-width: 65%;
+  }
+  .guide-grid {
+    gap: 24px;
+  }
+  .guide-grid h2 {
+    font-size: 23px;
+  }
+  .guide-grid p {
+    font-size: 15px;
+  }
+}
+@media (max-width: 639px) {
+  .seat-rows { overflow-x: auto; padding-bottom: 8px; }
+  .seat-row { min-width: calc(var(--seat-columns, 10) * 28px + 24px); }
+  :root {
+    --gut: 20px;
+    --nav: 64px;
+  }
+  .nav-inner {
+    gap: 12px;
+  }
+  .brand {
+    font-size: 18px;
+  }
+  .brand-name {
+    font-size: 14px;
+  }
+  .nav-actions {
+    gap: 8px;
+  }
+  .login-link,
+  .user-name,
+  .signout {
+    display: none;
+  }
+  .nav-book {
+    padding: 8px 12px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+  .nav-book svg {
+    width: 14px;
+  }
+  .menu-button {
+    min-width: 36px;
+  }
+  .section-heading {
+    align-items: start;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .section-heading h2 {
+    font-size: 29px;
+    letter-spacing: -0.9px;
+    margin-top: 10px;
+  }
+  .section-heading > .link {
+    font-size: 13px;
+    margin-top: 30px;
+    white-space: nowrap;
+    gap: 5px;
+  }
+  .eyebrow {
+    font-size: 13px;
+  }
+  .film-tabs {
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .film-tabs button {
+    font-size: 14px;
+  }
+  .movie-grid {
+    gap: 28px 16px;
+  }
+  .movie-meta {
+    font-size: 13px;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .movie-card h3 {
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    margin-top: 8px;
+    line-height: 1.3;
+  }
+  .movie-card-body {
+    padding-top: 12px;
+  }
+  .movie-card-body > p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .movie-book {
+    font-size: 13px;
+    margin-top: 16px;
+    padding-top: 12px;
+    gap: 4px;
+  }
+  .movie-book svg {
+    width: 14px;
+  }
+  .age-badge {
+    font-size: 13px;
+    top: 8px;
+    left: 8px;
+    padding: 3px 4px;
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 28px;
+    padding-bottom: 28px;
+  }
+  .footer-links {
+    gap: 16px;
+  }
+  .footer-links .link {
+    font-size: 13px;
+  }
+  .footer-bottom {
+    gap: 16px;
+    font-size: 13px;
+  }
+  .footer-bottom > span:last-child {
+    width: 100%;
+  }
+  .page-shell {
+    padding-top: calc(var(--nav) + 24px);
+    padding-bottom: 64px;
+  }
+  .breadcrumb {
+    margin-bottom: 32px;
+    font-size: 13px;
+    gap: 8px;
+  }
+  .page-heading {
+    margin-bottom: 28px;
+  }
+  .page-heading h1 {
+    font-size: 33px;
+    letter-spacing: -1px;
+  }
+  .page-intro {
+    font-size: 14px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  .catalog-toolbar {
+    flex-direction: column-reverse;
+    gap: 24px;
+  }
+  .catalog-toolbar .film-tabs {
+    padding-top: 0;
+    width: 100%;
+  }
+  .search-field {
+    width: 100%;
+    min-height: 44px;
+  }
+  .search-field > input {
+    font-size: 13px;
+  }
+  .filter-row {
+    gap: 12px;
+    align-items: end;
+    flex-wrap: wrap;
+  }
+  .filter-row > label {
+    flex-direction: column;
+    align-items: start;
+    gap: 8px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .filter-row select,
+  .filter-row input {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    height: 44px;
+  }
+  .result-count {
+    font-size: 13px;
+    width: 100%;
+  }
+  .date-picker {
+    gap: 6px;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .date-button {
+    padding: 12px 8px;
+    gap: 8px;
+  }
+  .date-button span {
+    font-size: 13px;
+  }
+  .date-button strong {
+    font-size: 16px;
+  }
+  .schedule-tools {
+    padding-bottom: 24px;
+  }
+  .schedule-row {
+    grid-template-columns: 72px 1fr;
+    gap: 20px;
+    padding-block: 24px;
+  }
+  .schedule-poster img {
+    width: 72px;
+    height: 108px;
+  }
+  .schedule-movie h2 {
+    font-size: 22px;
+    margin-block: 8px;
+  }
+  .schedule-movie p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .schedule-movie > .muted {
+    font-size: 13px;
+  }
+  .schedule-row .showtime-groups,
+  .schedule-row > .no-shows {
+    grid-column: 1/-1;
+  }
+  .showtime-group {
+    gap: 16px;
+  }
+  .showtime {
+    padding: 10px 16px;
+  }
+  .showtime strong {
+    font-size: 16px;
+  }
+  .showtime span {
+    font-size: 13px;
+  }
+  .movie-detail {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .detail-poster {
+    width: 180px;
+    justify-self: center;
+  }
+  .detail-copy h1 {
+    font-size: 36px;
+  }
+  .detail-subtitle {
+    font-size: 18px;
+  }
+  .detail-facts {
+    font-size: 13px;
+    gap: 14px;
+    margin-block: 20px;
+  }
+  .synopsis {
+    font-size: 15px;
+  }
+  .btn-row {
+    flex-direction: column;
+  }
+  .btn-row > .btn {
+    width: 100%;
+  }
+  .movie-credits {
+    font-size: 13px;
+    grid-template-columns: 72px 1fr;
+  }
+  .detail-shows {
+    margin-top: 40px;
+    padding-top: 40px;
+  }
+  .detail-shows .section-heading h2 {
+    font-size: 28px;
+  }
+  .detail-shows .section-heading > .muted {
+    font-size: 13px;
+  }
+  .trailer-frame {
+    margin-top: 32px;
+  }
+  .auth-layout {
+    padding-top: calc(var(--nav) + 48px);
+  }
+  .auth-form {
+    padding-top: 0;
+  }
+  .auth-form h1 {
+    font-size: 34px;
+  }
+  .auth-form > p.muted {
+    font-size: 14px;
+  }
+  .booking-title {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .booking-title h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+  }
+  .hold-timer {
+    padding: 12px 16px;
+    justify-content: space-between;
+  }
+  .hold-timer > span {
+    display: block;
+    margin-right: auto;
+  }
+  .hold-timer strong {
+    font-size: 20px;
+  }
+  .booking-steps {
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .booking-steps li {
+    font-size: 13px;
+    gap: 6px;
+  }
+  .booking-steps li > span {
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+  }
+  .seat-panel {
+    padding: 16px 8px;
+  }
+  .seat-panel-heading {
+    padding-inline: 8px;
+    font-size: 13px;
+  }
+  .seat-panel-heading h2 {
+    font-size: 18px;
+  }
+  .seat-row {
+    gap: 4px;
+  }
+  .row-letter {
+    font-size: 13px;
+    width: 10px;
+  }
+  .seat-row-buttons {
+    gap: 4px;
+  }
+  .seat {
+    height: 26px;
+    font-size: 13px;
+    border-radius: 4px 4px 2px 2px;
+  }
+  .screen {
+    margin-top: 32px;
+    margin-bottom: 32px;
+    font-size: 13px;
+  }
+  .seat-rows {
+    gap: 8px;
+  }
+  .seat-legend {
+    gap: 12px;
+    font-size: 13px;
+    padding-inline: 8px;
+  }
+  .seat-legend > span {
+    gap: 4px;
+  }
+  .seat-legend i {
+    width: 12px;
+    height: 12px;
+  }
+  .seat-prices {
+    gap: 16px;
+    font-size: 13px;
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+  .booking-summary {
+    padding: 24px;
+  }
+  .summary-details {
+    font-size: 13px;
+  }
+  .summary-total strong {
+    font-size: 26px;
+  }
+  .review-panel {
+    padding: 24px 12px;
+  }
+  .review-panel h2 {
+    font-size: 25px;
+  }
+  .review-seats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .review-seats > div {
+    padding: 16px 8px;
+  }
+  .ticket-card {
+    grid-template-columns: 68px 1fr;
+  }
+  .ticket-card > img {
+    width: 68px;
+    height: 102px;
+    min-height: 0;
+    margin: 16px 0 0 12px;
+  }
+  .ticket-content {
+    padding: 16px 12px 16px 24px;
+  }
+  .ticket-card-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ticket-content h2 {
+    font-size: 20px;
+    margin-block: 12px 8px;
+  }
+  .ticket-content p {
+    font-size: 13px;
+  }
+  .ticket-id {
+    font-size: 13px;
+  }
+  .ticket-content > .muted {
+    font-size: 13px;
+  }
+  .empty-state {
+    padding: 48px 0;
+  }
+  .empty-state h2 {
+    font-size: 26px;
+  }
+  .empty-state p {
+    font-size: 14px;
+  }
+  .empty-state .btn {
+    width: 100%;
+  }
+  .guide-grid {
+    grid-template-columns: 1fr;
+    margin-block: 40px;
+    gap: 32px;
+  }
+  .guide-grid h2 {
+    font-size: 25px;
+    margin-block: 16px 12px;
+  }
+  .guide-grid p {
+    font-size: 15px;
+  }
+  .guide-note {
+    font-size: 13px;
+    padding: 20px;
+  }
+  .guide-page > .btn {
+    width: 100%;
+  }
+  .admin-top {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .admin-top .status-label {
+    font-size: 13px;
+  }
+  .admin-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 24px;
+    margin-bottom: 28px;
+  }
+  .admin-nav > a {
+    font-size: 13px;
+    padding-block: 12px;
+  }
+  .admin-heading {
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+  .admin-heading .page-heading {
+    max-width: none;
+    margin-bottom: 20px;
+  }
+  .admin-heading > .btn {
+    margin-top: 0;
+    width: 100%;
+  }
+  .admin-shell .page-heading h1 {
+    font-size: 30px;
+  }
+  .stat-grid {
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stat-grid > div {
+    padding: 16px;
+    gap: 20px;
+  }
+  .stat-grid span {
+    font-size: 13px;
+  }
+  .stat-grid strong {
+    font-size: 25px;
+  }
+  .admin-revenue {
+    gap: 32px;
+  }
+  .admin-revenue h2 {
+    font-size: 23px;
+  }
+  .admin-revenue table {
+    min-width: 0;
+  }
+  table {
+    font-size: 13px;
+    min-width: 560px;
+  }
+  th {
+    font-size: 13px;
+    padding: 12px;
+  }
+  td {
+    padding: 12px;
+  }
+  .admin-editor {
+    padding: 20px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .editor-header h2 {
+    font-size: 22px;
+  }
+  .room-grid {
+    grid-template-columns: 1fr;
+  }
+  .room-card {
+    padding: 24px;
+  }
+  .admin-editor > .btn {
+    width: 100%;
+  }
+  .notice {
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    scroll-behavior: auto !important;
+  }
+}

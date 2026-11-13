@@ -2,6 +2,12 @@
 
 # dependencies
 /node_modules
+/client/node_modules/
+/.dependency-backup-client/
+/client/build/
+/server/node_modules/
+/server/storage/
+/server/.env
 /.pnp
 .pnp.js
 
@@ -21,3 +27,13 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local design QA profiles and generated screenshots
+.taste-skill/chrome*/
+.taste-skill/shots/
+.taste-skill/layout/
+.taste-skill/layout-udu/
+.taste-skill/reports/
+.taste-skill/reports-tablet/
+.taste-skill/*.log
+.tools/

@@ -1,0 +1,58 @@
+/* Trang chủ: ảnh phim tiêu điểm bên phải, thông tin và nút đặt vé bên trái. */
+.home-intro {
+  min-height: 100svh;
+  padding: calc(var(--nav) + 56px) 0 56px;
+  display: flex;
+  align-items: center;
+}
+.home-intro-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 64px;
+}
+.home-intro h1 {
+  margin-top: 20px;
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  line-height: 1.15;
+}
+.home-description {
+  margin-top: 24px;
+  max-width: 440px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.home-featured-info { margin-top: 40px; }
+.home-featured-info h2 { margin-top: 12px; font-size: 30px; font-weight: 500; }
+.home-featured-info p { margin: 12px 0 24px; font-size: 14px; color: var(--muted); }
+.home-featured-poster {
+  display: block;
+  width: min(100%, 360px);
+  justify-self: center;
+  overflow: hidden;
+}
+.home-featured-poster img { width: 100%; height: auto; }
+.home-preview { padding: 80px 0; background: var(--p-surface); }
+.home-preview .movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.home-preview .section-heading h2 { margin-top: 0; }
+
+@media (max-width: 1023px) {
+  .home-intro-content { gap: 32px; }
+  .home-intro h1 { font-size: 38px; }
+  .home-featured-poster { width: 280px; }
+}
+@media (max-width: 639px) {
+  .home-intro { padding: calc(var(--nav) + 32px) 0 40px; }
+  .home-intro-content { grid-template-columns: 1fr; gap: 32px; }
+  .home-intro h1 { font-size: 34px; }
+  .home-description { margin-top: 16px; }
+  .home-featured-info { margin-top: 24px; }
+  .home-intro .btn { width: 100%; }
+  .home-featured-poster { width: 180px; }
+  .home-preview { padding: 48px 0; }
+  .home-preview .movie-grid { grid-template-columns: 1fr; }
+  .home-preview .poster-link { max-height: 450px; }
+}
