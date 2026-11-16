@@ -10,69 +10,76 @@ import { clearBooking, removeSeats, startBooking, toggleSeat } from "./store";
 import { Arrow, Breadcrumb, Button, Notice, Steps, Timer } from "./components";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
-export const SeatMap = ({ room, occupied, selected, onSelect }) => (
-  <div className="seat-map" style={{ "--seat-columns": room.columns }}>
-    <div className="screen">
-      <span>Màn hình</span>
-    </div>
-    <div className="seat-rows">
-      {Array.from({ length: room.rows }, (_, row) => {
-        const letter = String.fromCharCode(65 + row);
-        const vip = room.vipRows.includes(letter);
-        return (
-          <div className="seat-row" key={letter}>
-            <span className="row-letter">{letter}</span>
-            <div
-              className="seat-row-buttons"
-              style={{ "--columns": room.columns }}
-            >
-              {Array.from({ length: room.columns }, (_, column) => {
-                const id = `${letter}${column + 1}`;
-                const sold = occupied.includes(id);
-                const chosen = selected.includes(id);
-                let status = "thường";
-                if (vip) status = "VIP";
-                if (chosen) status = "đang chọn";
-                if (sold) status = "đã bán";
-                return (
-                  <button
-                    key={id}
-                    disabled={sold}
-                    aria-label={`Ghế ${id}, ${status}`}
-                    aria-pressed={chosen}
-                    className={`seat ${vip ? "vip" : ""} ${sold ? "sold" : ""} ${chosen ? "chosen" : ""}`}
-                    onClick={() => onSelect(id)}
-                  >
-                    {chosen ? <Check size={14} /> : column + 1}
-                  </button>
-                );
-              })}
+export const SeatMap = ({ room, occupied, selected, onSelect }) => {
+  const vipRows = Array.isArray(room?.vipRows)
+    ? room.vipRows
+    : typeof room?.vipRows === "string"
+    ? JSON.parse(room.vipRows || "[]")
+    : [];
+  return (
+    <div className="seat-map" style={{ "--seat-columns": room.columns }}>
+      <div className="screen">
+        <span>Màn hình</span>
+      </div>
+      <div className="seat-rows">
+        {Array.from({ length: room.rows }, (_, row) => {
+          const letter = String.fromCharCode(65 + row);
+          const vip = vipRows.includes(letter);
+          return (
+            <div className="seat-row" key={letter}>
+              <span className="row-letter">{letter}</span>
+              <div
+                className="seat-row-buttons"
+                style={{ "--columns": room.columns }}
+              >
+                {Array.from({ length: room.columns }, (_, column) => {
+                  const id = `${letter}${column + 1}`;
+                  const sold = occupied.includes(id);
+                  const chosen = selected.includes(id);
+                  let status = "thường";
+                  if (vip) status = "VIP";
+                  if (chosen) status = "đang chọn";
+                  if (sold) status = "đã bán";
+                  return (
+                    <button
+                      key={id}
+                      disabled={sold}
+                      aria-label={`Ghế ${id}, ${status}`}
+                      aria-pressed={chosen}
+                      className={`seat ${vip ? "vip" : ""} ${sold ? "sold" : ""} ${chosen ? "chosen" : ""}`}
+                      onClick={() => onSelect(id)}
+                    >
+                      {chosen ? <Check size={14} /> : column + 1}
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="row-letter">{letter}</span>
             </div>
-            <span className="row-letter">{letter}</span>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      <div className="seat-legend">
+        <span>
+          <i className="seat" />
+          Ghế thường
+        </span>
+        <span>
+          <i className="seat vip" />
+          Ghế VIP
+        </span>
+        <span>
+          <i className="seat chosen" />
+          Đang chọn
+        </span>
+        <span>
+          <i className="seat sold" />
+          Đã bán
+        </span>
+      </div>
     </div>
-    <div className="seat-legend">
-      <span>
-        <i className="seat" />
-        Ghế thường
-      </span>
-      <span>
-        <i className="seat vip" />
-        Ghế VIP
-      </span>
-      <span>
-        <i className="seat chosen" />
-        Đang chọn
-      </span>
-      <span>
-        <i className="seat sold" />
-        Đã bán
-      </span>
-    </div>
-  </div>
-);
+  );
+};
 
 export const BookingSummary = ({
   movie,
@@ -153,16 +160,21 @@ export const BookingSession = ({ show, movie, room }) => {
   // Chỉ tính lại khi ghế đang chọn hoặc giá vé thay đổi (yêu cầu của đề).
   const total = useMemo(() => {
     let totalPrice = 0;
+    const vipList = Array.isArray(room?.vipRows)
+      ? room.vipRows
+      : typeof room?.vipRows === "string"
+      ? JSON.parse(room.vipRows || "[]")
+      : [];
     for (const seatId of selected) {
       const row = seatId[0];
-      if (room.vipRows.includes(row)) {
+      if (vipList.includes(row)) {
         totalPrice += show.vipPrice;
       } else {
         totalPrice += show.price;
       }
     }
     return totalPrice;
-  }, [selected, room.vipRows, show.vipPrice, show.price]);
+  }, [selected, room?.vipRows, show.vipPrice, show.price]);
   const select = (id) => {
     if (selected.length >= 8 && !selected.includes(id)) {
       setError("Bạn chỉ có thể chọn tối đa 8 ghế cho mỗi lần đặt.");
@@ -225,21 +237,21 @@ export const BookingSession = ({ show, movie, room }) => {
               <h2>Mọi thứ đã sẵn sàng?</h2>
               <p>Kiểm tra thông tin bên cạnh trước khi xác nhận vé.</p>
               <div className="review-seats">
-                {[...selected].sort().map((id) => (
-                  <div key={id}>
-                    <span>
-                      {room.vipRows.includes(id[0]) ? "Ghế VIP" : "Ghế thường"}
-                    </span>
-                    <strong>{id}</strong>
-                    <span>
-                      {money(
-                        room.vipRows.includes(id[0])
-                          ? show.vipPrice
-                          : show.price,
-                      )}
-                    </span>
-                  </div>
-                ))}
+                {[...selected].sort().map((id) => {
+                  const vipList = Array.isArray(room?.vipRows)
+                    ? room.vipRows
+                    : typeof room?.vipRows === "string"
+                    ? JSON.parse(room.vipRows || "[]")
+                    : [];
+                  const isVip = vipList.includes(id[0]);
+                  return (
+                    <div key={id}>
+                      <span>{isVip ? "Ghế VIP" : "Ghế thường"}</span>
+                      <strong>{id}</strong>
+                      <span>{money(isVip ? show.vipPrice : show.price)}</span>
+                    </div>
+                  );
+                })}
               </div>
               <p className="muted">
                 Bạn có thể hủy vé trước giờ chiếu ít nhất 2 giờ.

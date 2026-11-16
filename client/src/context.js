@@ -2,11 +2,13 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import { useLocalStorage } from "./hooks";
 import { getCurrentUser, loginAccount, registerAccount, logoutAccount } from "./auth";
+import { api } from "./api";
 import {
   initialRooms,
   initialShows,
@@ -15,47 +17,88 @@ import {
 } from "./data";
 
 const AppContext = createContext(null);
+
 export const AppProvider = ({ children, initialUser = null }) => {
   const [user, setUser] = useState(() => initialUser || getCurrentUser());
+
   const authenticate = async (action, fields) => {
-    const account = action === "register"
-      ? await registerAccount(fields)
-      : await loginAccount(fields);
+    const account =
+      action === "register"
+        ? await registerAccount(fields)
+        : await loginAccount(fields);
     setUser(account);
     return account;
   };
+
   const logout = () => {
     logoutAccount();
     setUser(null);
   };
+
   const [movies, setMovies] = useLocalStorage("cinenep-movies", initialMovies);
   const [rooms, setRooms] = useLocalStorage("cinenep-rooms", initialRooms);
   const [shows, setShows] = useLocalStorage("cinenep-shows-v1", initialShows);
   const [tickets, setTickets] = useLocalStorage("cinenep-tickets", []);
   const [notice, setNotice] = useState("");
+
   const notify = useCallback((message) => setNotice(message), []);
+
+  useEffect(() => {
+    let active = true;
+    const fetchData = async () => {
+      try {
+        const [serverMovies, serverRooms, serverShows] = await Promise.all([
+          api.get("/movies"),
+          api.get("/rooms"),
+          api.get("/shows"),
+        ]);
+        if (active) {
+          if (serverMovies?.length) setMovies(serverMovies);
+          if (serverRooms?.length) {
+            const formattedRooms = serverRooms.map((r) => ({
+              ...r,
+              vipRows: Array.isArray(r.vipRows)
+                ? r.vipRows
+                : typeof r.vipRows === "string"
+                ? JSON.parse(r.vipRows || "[]")
+                : [],
+            }));
+            setRooms(formattedRooms);
+          }
+          if (serverShows?.length) setShows(serverShows);
+        }
+      } catch {
+        // Fallback to local data
+      }
+    };
+    fetchData();
+    return () => {
+      active = false;
+    };
+  }, [setMovies, setRooms, setShows]);
+
   const book = (show, seats, total) => {
-    // Đọc lại vé trong trình duyệt trước khi xác nhận, phòng trường hợp tab khác vừa đặt.
     let latest = tickets;
     try {
       latest = JSON.parse(localStorage.getItem("cinenep-tickets") || "[]");
-    } catch {
-      // Nếu không đọc được dữ liệu lưu, dùng danh sách vé trong state.
-    }
+    } catch {}
+
     const occupied = [...show.sold];
     for (const ticket of latest) {
       if (ticket.showId === show.id && ticket.status === "confirmed") {
         occupied.push(...ticket.seats);
       }
     }
+
     const conflicts = seats.filter((seatId) => occupied.includes(seatId));
     if (conflicts.length) {
       setTickets(latest);
       return { conflicts };
     }
+
     const ticket = {
       id: `UDU-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
-      userId: user.id,
+      userId: user?.id,
       showId: show.id,
       movieId: show.movieId,
       seats: [...seats],
@@ -65,24 +108,35 @@ export const AppProvider = ({ children, initialUser = null }) => {
       show: { ...show },
       roomName: rooms.find((r) => r.id === show.roomId)?.name,
     };
+
     const next = [ticket, ...latest];
     localStorage.setItem("cinenep-tickets", JSON.stringify(next));
     setTickets(next);
+
+    api.post("/tickets", { showId: show.id, seats }).catch(() => {});
+
     return { ticket };
   };
+
   const cancelTicket = (id) => {
     const ticket = tickets.find((t) => t.id === id);
     if (
       !ticket ||
       ticket.userId !== user?.id ||
       showDate(ticket.show) - Date.now() < 7200000
-    )
+    ) {
       return false;
+    }
+
     setTickets((current) =>
-      current.map((t) => (t.id === id ? { ...t, status: "cancelled" } : t)),
+      current.map((t) => (t.id === id ? { ...t, status: "cancelled" } : t))
     );
+
+    api.patch(`/tickets/${id}/cancel`).catch(() => {});
+
     return true;
   };
+
   const value = {
     user,
     authenticate,
@@ -99,6 +153,7 @@ export const AppProvider = ({ children, initialUser = null }) => {
     notice,
     notify,
   };
+
   return (
     <AppContext.Provider value={value}>
       {children}
@@ -108,22 +163,20 @@ export const AppProvider = ({ children, initialUser = null }) => {
     </AppContext.Provider>
   );
 };
+
 export const useApp = () => useContext(AppContext);
+
 export const useOccupied = (show) => {
   const { tickets } = useApp();
-  return useMemo(
-    () => {
-      if (!show) return [];
+  return useMemo(() => {
+    if (!show) return [];
 
-      // Mảng mới, không thay đổi dữ liệu ghế gốc của suất chiếu.
-      const occupiedSeats = [...show.sold];
-      for (const ticket of tickets) {
-        if (ticket.showId === show.id && ticket.status === "confirmed") {
-          occupiedSeats.push(...ticket.seats);
-        }
+    const occupiedSeats = [...show.sold];
+    for (const ticket of tickets) {
+      if (ticket.showId === show.id && ticket.status === "confirmed") {
+        occupiedSeats.push(...ticket.seats);
       }
-      return occupiedSeats;
-    },
-    [show, tickets],
-  );
+    }
+    return occupiedSeats;
+  }, [show, tickets]);
 };

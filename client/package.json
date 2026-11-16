@@ -1,6 +1,7 @@
 {
-  "name": "nhom36-ck",
-  "version": "0.1.0",
+  "name": "uducinematic-client",
+  "version": "1.0.0",
+  "description": "Frontend for UDU cinematic - Movie Ticket Booking",
   "dependencies": {
     "@reduxjs/toolkit": "^2.14.0",
     "@testing-library/dom": "^10.4.2",

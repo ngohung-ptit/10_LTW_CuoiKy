@@ -130,65 +130,72 @@ export const AdminRooms = () => {
         </form>
       )}
       <div className="room-grid">
-        {rooms.map((room) => (
-          <article className="room-card" key={room.id}>
-            <Armchair size={28} strokeWidth={1} />
-            <h2>{room.name}</h2>
-            <div className="mini-seat-map" aria-hidden="true">
-              {Array.from({ length: room.rows }, (_, i) => (
-                <div key={i}>
-                  {Array.from({ length: room.columns }, (_, j) => (
-                    <i
-                      className={
-                        room.vipRows.includes(String.fromCharCode(65 + i))
-                          ? "mini-vip"
-                          : ""
-                      }
-                      key={j}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-            <p>
-              {room.rows} hàng × {room.columns} ghế · {room.rows * room.columns}{" "}
-              chỗ
-            </p>
-            <p className="muted">
-              Hàng VIP: {room.vipRows.join(", ") || "Không có"}
-            </p>
-            <div className="table-actions">
-              <button
-                className="text-button"
-                onClick={() => {
-                  if (shows.some((s) => s.roomId === room.id)) {
-                    setError(
-                      "Phòng đang có suất chiếu. Xóa các suất trước khi thay đổi cấu hình để giữ đúng sơ đồ ghế.",
-                    );
-                    return;
-                  }
-                  setEditing({ ...room, vipText: room.vipRows.join(",") });
-                  setError("");
-                }}
-              >
-                Sửa phòng
-              </button>
-              <button
-                className="text-button"
-                onClick={() => {
-                  if (shows.some((s) => s.roomId === room.id))
-                    setError("Không thể xóa phòng đang có suất chiếu.");
-                  else
-                    setRooms((current) =>
-                      current.filter((r) => r.id !== room.id),
-                    );
-                }}
-              >
-                Xóa phòng
-              </button>
-            </div>
-          </article>
-        ))}
+        {rooms.map((room) => {
+          const vipList = Array.isArray(room.vipRows)
+            ? room.vipRows
+            : typeof room.vipRows === "string"
+            ? JSON.parse(room.vipRows || "[]")
+            : [];
+          return (
+            <article className="room-card" key={room.id}>
+              <Armchair size={28} strokeWidth={1} />
+              <h2>{room.name}</h2>
+              <div className="mini-seat-map" aria-hidden="true">
+                {Array.from({ length: room.rows }, (_, i) => (
+                  <div key={i}>
+                    {Array.from({ length: room.columns }, (_, j) => (
+                      <i
+                        className={
+                          vipList.includes(String.fromCharCode(65 + i))
+                            ? "mini-vip"
+                            : ""
+                        }
+                        key={j}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <p>
+                {room.rows} hàng × {room.columns} ghế · {room.rows * room.columns}{" "}
+                chỗ
+              </p>
+              <p className="muted">
+                Hàng VIP: {vipList.join(", ") || "Không có"}
+              </p>
+              <div className="table-actions">
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    if (shows.some((s) => s.roomId === room.id)) {
+                      setError(
+                        "Phòng đang có suất chiếu. Xóa các suất trước khi thay đổi cấu hình để giữ đúng sơ đồ ghế.",
+                      );
+                      return;
+                    }
+                    setEditing({ ...room, vipRows: vipList, vipText: vipList.join(",") });
+                    setError("");
+                  }}
+                >
+                  Sửa phòng
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    if (shows.some((s) => s.roomId === room.id))
+                      setError("Không thể xóa phòng đang có suất chiếu.");
+                    else
+                      setRooms((current) =>
+                        current.filter((r) => r.id !== room.id),
+                      );
+                  }}
+                >
+                  Xóa phòng
+                </button>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </>
   );

@@ -3,7 +3,11 @@
   "private": true,
   "scripts": {
     "start": "npm --prefix client start",
+    "server": "npm --prefix server start",
+    "server:dev": "npm --prefix server run dev",
+    "seed": "npm --prefix server run seed",
     "build": "npm --prefix client run build",
-    "test": "npm --prefix client test -- --watchAll=false --runInBand"
+    "test": "npm --prefix client test -- --watchAll=false --runInBand",
+    "test:server": "node server/testApi.js"
   }
 }

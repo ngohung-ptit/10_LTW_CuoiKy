@@ -1,59 +1,117 @@
-# UDU cinematic — Đề 1: Đặt vé xem phim
-1) Frontend
-## Cấu trúc
+# UDU cinematic 
+
+Hệ thống web full-stack đặt vé xem phim trực tuyến: Khách xem lịch chiếu, thành viên chọn suất và ghế trên sơ đồ tương tác để đặt vé, quản trị viên quản lý phim, phòng chiếu, suất chiếu và theo dõi thống kê doanh thu.
+
+---
+
+## Cấu trúc thư mục
 
 ```text
 10_LTW_CuoiKy/
-├── client/                  Toàn bộ frontend
-│   ├── public/              Ảnh, font, tài nguyên tĩnh
+├── client/                  Toàn bộ frontend (React, Redux Toolkit, React Router)
+│   ├── public/              Ảnh poster, font, tài nguyên tĩnh
 │   ├── src/
-│   │   ├── pages/           Trang chủ, phim, tài khoản, vé
-│   │   ├── admin/           Giao diện quản trị
-│   │   ├── App.js           Khai báo route
-│   │   ├── auth.js          Mô phỏng đăng ký/đăng nhập cục bộ
-│   │   ├── context.js       Tài khoản và dữ liệu dùng chung
-│   │   ├── store.js         Redux Toolkit lưu ghế đang chọn
-│   │   └── booking.js       Sơ đồ ghế, tính tiền, xác nhận
+│   │   ├── admin/           Giao diện quản trị (dashboard, phim, phòng, suất chiếu)
+│   │   ├── pages/           Trang chủ, danh sách phim, chi tiết phim, lịch chiếu, vé của tôi
+│   │   ├── api.js           Module gọi REST API tập trung, tự động gắn JWT
+│   │   ├── App.js           Khai báo router, nested routes & route bảo vệ
+│   │   ├── auth.js          Quản lý tài khoản, phiên đăng nhập JWT
+│   │   ├── booking.js       Sơ đồ ghế động, tính tiền useMemo, đếm ngược 5 phút
+│   │   ├── components.js    Các components tái sử dụng (Header, Footer, Button, Field,...)
+│   │   ├── context.js       Context API dữ liệu dùng chung & đồng bộ API
+│   │   ├── data.js          Hàm tiện ích định dạng ngày giờ, tiền tệ
+│   │   └── store.js         Redux Toolkit quản lý ghế đang chọn & phiên đặt vé
 │   └── package.json
-├── server/                  Thư mục chờ cho giai đoạn backend
-├── docs/                    Hướng dẫn đọc code và đối chiếu đề
-└── package.json             Lệnh chạy frontend từ thư mục gốc
+├── server/                  Toàn bộ backend (Node.js, Express, SQLite/MySQL, Sequelize)
+│   ├── src/
+│   │   ├── config/          Kết nối CSDL SQLite/MySQL qua Sequelize
+│   │   ├── controllers/     Xử lý logic nghiệp vụ các tài nguyên
+│   │   ├── middlewares/     Xác thực JWT, phân quyền Admin, xử lý lỗi tập trung
+│   │   ├── models/          Khai báo bảng và quan hệ CSDL (ORM)
+│   │   ├── routes/          Định tuyến REST API chuẩn
+│   │   └── seed/            Script nạp dữ liệu mẫu ban đầu
+│   ├── database.sqlite      File CSDL SQLite (zero-config)
+│   ├── server.js            Entry point khởi động server Express + Socket.io
+│   ├── testApi.js           Kịch bản kiểm thử tự động toàn bộ API
+│   ├── .env.example         Mẫu biến môi trường
+│   └── package.json
+├── documentation.md         Tài liệu kỹ thuật và giải thích chi tiết toàn bộ code
+└── package.json             Lệnh điều khiển toàn bộ dự án từ thư mục gốc
 ```
 
-## Cài và chạy frontend
+---
 
-Cần Node.js 22+ và npm. Nếu dùng NVM, chọn phiên bản Node đã cài trước. Mở terminal ở thư mục gốc:
+## Hướng dẫn cài đặt & Khởi chạy
+
+Yêu cầu môi trường: **Node.js 20+** và **npm**.
+
+### 1. Chạy Backend
+
+Mở terminal tại thư mục gốc:
 
 ```bash
+# Cài đặt thư viện backend
+npm --prefix server install
+
+# Nạp dữ liệu mẫu (phim, phòng, suất chiếu, tài khoản demo)
+npm run seed
+
+# Khởi động backend (mặc định cổng 5000)
+npm run server
+```
+
+> **Ghi chú CSDL:** Mặc định hệ thống sử dụng **SQLite** (`server/database.sqlite`), không cần cài đặt thêm phần mềm máy chủ CSDL. Nếu muốn chuyển sang **MySQL**, xem hướng dẫn trong [server/README.md](file:///c:/Users/hungs/Documents/code%20củng%20udu2/react/10_LTW_CuoiKy/server/README.md) hoặc [documentation.md](file:///c:/Users/hungs/Documents/code%20củng%20udu2/react/10_LTW_CuoiKy/documentation.md).
+
+### 2. Chạy Frontend
+
+Mở một terminal khác tại thư mục gốc:
+
+```bash
+# Cài đặt thư viện frontend
 npm --prefix client ci --legacy-peer-deps
+
+# Khởi động giao diện React (mặc định cổng 3000)
 npm start
 ```
 
-Mở http://localhost:3000. Chỉ cần một terminal, không cần khởi động server hoặc seed backend.
+Mở trình duyệt truy cập: **http://localhost:3000**
+
+---
+
+## Kiểm thử tự động (Testing)
+
+Dự án có sẵn bộ kịch bản kiểm thử tự động hoàn chỉnh:
 
 ```bash
+# Kiểm thử toàn bộ API backend (10 kịch bản: auth, conflict 409, overlap 400, cancel 2h, stats)
+npm run test:server
+
+# Kiểm thử các luồng giao diện frontend (17 kịch bản kiểm thử tích hợp)
 npm test
+
+# Build kiểm tra đóng gói production
 npm run build
-npm --prefix client run preview
 ```
 
-Bản build ở `client/build/`; preview tại http://localhost:5300. Khi đưa lên hosting, cấu hình rewrite các route của SPA về `index.html`.
+---
 
-## Tài khoản mẫu trên trình duyệt
+## Tài khoản mẫu
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Quản trị | admin@udu.example | Admin@12345 |
-| Thành viên | member@udu.example | Member@12345 |
-| Khách | Không cần tài khoản | Không cần đăng nhập |
+| Vai trò | Email | Mật khẩu | Quyền hạn |
+| :--- | :--- | :--- | :--- |
+| **Quản trị viên (Admin)** | `admin@udu.example` | `Admin@12345` | Quản lý phim, phòng, suất chiếu, xem thống kê doanh thu |
+| **Thành viên (Member)** | `member@udu.example` | `Member@12345` | Đặt vé trên sơ đồ ghế, xem lịch sử vé, hủy vé trước 2h |
+| **Khách vãng lai** | Không cần đăng nhập | — | Xem phim đang/sắp chiếu, tìm kiếm, xem lịch chiếu |
 
-Tài khoản mẫu tự có khi dùng chức năng tài khoản, không cần script seed. Đăng ký email mới luôn tạo **thành viên** rồi đăng nhập ngay. Admin dùng cùng form đăng nhập, không chọn vai trò. Đăng xuất đưa về trạng thái khách.
+---
 
-Tài khoản lưu ở localStorage (`udu-accounts`), phiên đăng nhập lưu mã tài khoản ở sessionStorage (`udu-session`). Tải lại cùng tab giữ phiên; đóng tab kết thúc phiên. Mật khẩu đăng ký được băm bằng Web Crypto/PBKDF2 thay vì lưu rõ.
-## Chức năng theo vai trò
+## Các tính năng & Điểm nhấn kỹ thuật
 
-- **Khách:** danh sách đang/sắp chiếu, tìm tên, lọc thể loại/ngày, chi tiết phim, trailer YouTube, thời lượng và suất chiếu.
-- **Thành viên:** quyền khách; chọn suất và ghế thường/VIP (tối đa 8), xem tổng tiền, xác nhận vé, lịch sử vé riêng và hủy khi còn ít nhất 2 giờ trước suất chiếu.
-- **Quản trị:** giao diện quản lý phim, phòng (hàng/cột/hàng VIP), suất chiếu có kiểm tra chồng giờ, doanh thu theo phim/ngày.
-
-Trang chủ có phim tiêu điểm và một số phim gợi ý; trang Phim có danh sách đầy đủ và bộ lọc. Các dòng footer theo ảnh yêu cầu và nút nhập vai đã được bỏ.
+1. **Sơ đồ ghế tương tác:** Sinh động theo cấu hình phòng (số hàng, số ghế/hàng, danh sách hàng VIP), ghế đang chọn quản lý bằng **Redux Toolkit**, tổng tiền tính tự động bằng `useMemo`.
+2. **Chống đặt trùng ghế (Race Condition):** Xử lý trong **Database Transaction**. Nếu ghế đã bị người khác đặt, server từ chối và trả về mã lỗi **HTTP 409 Conflict** kèm danh sách ghế bị trùng.
+3. **Đếm ngược giữ ghế:** Đồng hồ 5 phút (`setInterval` có cleanup); khi hết giờ tự động giải phóng ghế và quay về trang phim bằng `useNavigate`.
+4. **Chống tạo suất chiếu chồng giờ:** Khi tạo suất chiếu mới trong cùng một phòng, server tự động kiểm tra giao thoa thời gian `[start, end]` (tính theo thời lượng phim) và từ chối nếu bị trùng giờ (**HTTP 400**).
+5. **Hủy vé trước giờ chiếu 2 tiếng:** Thành viên chỉ được hủy vé trước giờ chiếu ít nhất 2 giờ; khi hủy vé thành công, chỗ ngồi được trả lại trạng thái trống trên sơ đồ.
+6. **Thống kê doanh thu:** Thống kê doanh thu theo từng phim và theo ngày sử dụng truy vấn tổng hợp SQL (`GROUP BY`, `SUM`, `COUNT`).
+7. **Mã QR cho vé:** Tự động sinh mã QR Data URL cho mỗi vé đặt thành công.
+8. **Cập nhật thời gian thực:** Tích hợp **Socket.IO** phát sự kiện khi ghế được đặt hoặc hoàn trả.
