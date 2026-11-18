@@ -64,3 +64,17 @@ export const Movie = sequelize.define(
   }
 );
 
+Movie.beforeValidate((movie) => {
+  if (!movie.id && movie.title) {
+    const firstWord = movie.title
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/đ/g, "d")
+      .match(/[a-z0-9]+/)?.[0];
+    if (firstWord) {
+      movie.id = firstWord;
+    }
+  }
+});
+

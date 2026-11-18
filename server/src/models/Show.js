@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
+import { buildShowBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
 export const Show = sequelize.define(
   "Show",
@@ -40,4 +41,11 @@ export const Show = sequelize.define(
     timestamps: true,
   }
 );
+
+Show.beforeValidate(async (show) => {
+  if (!show.id && show.date && show.movieId && show.roomId) {
+    const baseId = buildShowBaseId(show);
+    show.id = await generateUniqueId(baseId, (id) => Show.findByPk(id));
+  }
+});
 

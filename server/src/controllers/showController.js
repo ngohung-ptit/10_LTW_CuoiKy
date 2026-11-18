@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { Show, Movie, Room, Ticket, TicketSeat } from "../models/index.js";
+import { buildShowBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
 const parseShowDateTime = (date, time) => {
   return new Date(`${date}T${time}:00+07:00`);
@@ -153,7 +153,15 @@ const saveShow = async (req, res, next) => {
       price: numPrice,
       vipPrice: numVipPrice,
     };
-    const show = current ? await current.update(data) : await Show.create({ id: randomUUID(), ...data });
+    let show;
+    if (current) {
+      show = await current.update(data);
+    } else {
+      const explicitId = req.body.id?.trim();
+      const baseId = explicitId || buildShowBaseId({ date, movieId, roomId });
+      const showId = explicitId ? explicitId : await generateUniqueId(baseId, (id) => Show.findByPk(id));
+      show = await Show.create({ id: showId, ...data });
+    }
 
     const plain = show.toJSON();
     plain.sold = [];

@@ -78,8 +78,23 @@ export const registerAccount = async ({ name, email, password }) => {
     if (accounts.some((account) => account.email === normalizedEmail)) {
       throw new Error("Email này đã được đăng ký.");
     }
+    const emailPrefix = normalizedEmail
+      .split("@")[0]
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const baseId = emailPrefix ? `udu-${emailPrefix}` : "udu-user";
+    let accountId = baseId;
+    let counter = 2;
+    while (accounts.some((account) => account.id === accountId)) {
+      accountId = `${baseId}-${counter}`;
+      counter++;
+    }
     const account = {
-      id: crypto.randomUUID(),
+      id: accountId,
       name: name.trim(),
       email: normalizedEmail,
       role: "member",

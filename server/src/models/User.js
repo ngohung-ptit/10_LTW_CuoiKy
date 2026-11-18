@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
+import { buildUserBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
 export const User = sequelize.define(
   "User",
@@ -34,4 +35,11 @@ export const User = sequelize.define(
     timestamps: true,
   }
 );
+
+User.beforeValidate(async (user) => {
+  if (!user.id && user.email) {
+    const baseId = buildUserBaseId(user);
+    user.id = await generateUniqueId(baseId, (id) => User.findByPk(id));
+  }
+});
 

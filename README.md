@@ -29,7 +29,9 @@ Hệ thống web full-stack đặt vé xem phim trực tuyến: Khách xem lịc
 │   │   ├── middlewares/     Xác thực JWT, phân quyền Admin, xử lý lỗi tập trung
 │   │   ├── models/          Khai báo bảng và quan hệ CSDL (ORM)
 │   │   ├── routes/          Định tuyến REST API chuẩn
+│   │   ├── utils/           Tiện ích sinh ID dễ nhớ (chuẩn dữ liệu seed)
 │   │   └── seed/            Script nạp dữ liệu mẫu ban đầu
+│   ├── tests/               Bộ kiểm thử tính bền vững và logic nghiệp vụ
 │   ├── database.sqlite      File CSDL SQLite (zero-config)
 │   ├── server.js            Entry point khởi động server Express + Socket.io
 │   ├── testApi.js           Kịch bản kiểm thử tự động toàn bộ API
@@ -86,7 +88,7 @@ Dự án có sẵn bộ kịch bản kiểm thử tự động hoàn chỉnh:
 # Kiểm thử toàn bộ API backend (10 kịch bản: auth, conflict 409, overlap 400, cancel 2h, stats)
 npm run test:server
 
-# Kiểm thử các luồng giao diện frontend (17 kịch bản kiểm thử tích hợp)
+# Kiểm thử các luồng giao diện frontend (25 kịch bản kiểm thử tích hợp trên 3 test suites)
 npm test
 
 # Build kiểm tra đóng gói production

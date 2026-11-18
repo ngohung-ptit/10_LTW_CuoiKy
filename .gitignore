@@ -37,3 +37,6 @@ yarn-error.log*
 .taste-skill/reports-tablet/
 .taste-skill/*.log
 .tools/
+
+# van de ky nang
+/documentation.md

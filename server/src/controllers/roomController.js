@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { Room, Show } from "../models/index.js";
+import { buildRoomBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
 const roomData = (body) => ({
   name: typeof body.name === "string" ? body.name.trim() : "",
@@ -61,7 +61,10 @@ export const createRoom = async (req, res, next) => {
       return res.status(400).json({ error: "Nhập tên phòng, 1–12 hàng, 4–16 ghế mỗi hàng và hàng VIP hợp lệ." });
     }
     if (await duplicateName(data.name)) return res.status(409).json({ error: "Tên phòng đã tồn tại." });
-    const room = await Room.create({ id: randomUUID(), ...data });
+    const explicitId = req.body.id?.trim();
+    const baseId = explicitId || buildRoomBaseId(data.name);
+    const roomId = explicitId ? explicitId : await generateUniqueId(baseId, (id) => Room.findByPk(id));
+    const room = await Room.create({ id: roomId, ...data });
 
     res.status(201).json(formatRoom(room));
   } catch (error) {

@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/index.js";
+import { buildUserBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -24,8 +25,11 @@ export const register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const explicitId = req.body.id?.trim();
+    const baseId = explicitId || buildUserBaseId({ email: normalizedEmail, name, role: "member" });
+    const userId = explicitId ? explicitId : await generateUniqueId(baseId, (id) => User.findByPk(id));
     const user = await User.create({
-      id: crypto.randomUUID(),
+      id: userId,
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,

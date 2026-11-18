@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
+import { buildRoomBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
 export const Room = sequelize.define(
   "Room",
@@ -47,3 +48,10 @@ export const Room = sequelize.define(
     timestamps: true,
   }
 );
+
+Room.beforeValidate(async (room) => {
+  if (!room.id && room.name) {
+    const baseId = buildRoomBaseId(room.name);
+    room.id = await generateUniqueId(baseId, (id) => Room.findByPk(id));
+  }
+});
