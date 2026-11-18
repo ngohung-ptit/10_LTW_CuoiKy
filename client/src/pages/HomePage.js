@@ -1,3 +1,4 @@
+import { posterSrc, posterSrcSet } from "../posters";
 import { Link } from "react-router-dom";
 import { useApp } from "../context";
 import { MovieCard } from "../components";
@@ -30,7 +31,7 @@ export const HomePage = () => {
           </div>
           {featuredMovie && (
             <Link className="home-featured-poster m-zoom" to={`/phim/${featuredMovie.id}`} aria-label={`Xem chi tiết ${featuredMovie.title}`}>
-              <img src={`/assets/images/${featuredMovie.poster}`} srcSet={`/assets/images/${featuredMovie.poster.replace('.jpg', '-small.jpg')} 342w, /assets/images/${featuredMovie.poster} 500w`} sizes="(max-width: 639px) 180px, (max-width: 1023px) 280px, 360px" alt={`Áp phích ${featuredMovie.title}`} width="500" height="750" fetchPriority="high" />
+              <img src={posterSrc(featuredMovie.poster)} srcSet={posterSrcSet(featuredMovie.poster)} sizes="(max-width: 639px) 180px, (max-width: 1023px) 280px, 360px" alt={`Áp phích ${featuredMovie.title}`} width="500" height="750" fetchPriority="high" />
             </Link>
           )}
         </div>

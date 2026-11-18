@@ -4,6 +4,7 @@ import { useApp } from "../context";
 import { days, money, showDate } from "../data";
 import { Arrow, Button, EmptyState, Field, Notice, PageHeading } from "../components";
 import { EditorHeader } from "./EditorHeader";
+import { api } from "../api";
 
 // State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminShows = () => {
@@ -12,11 +13,13 @@ export const AdminShows = () => {
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(null);
+  const [saving, setSaving] = useState(false);
   const locked = (id) =>
     shows.find((s) => s.id === id)?.sold.length ||
     tickets.some((t) => t.showId === id && t.status === "confirmed");
-  const save = (e) => {
+  const save = async (e) => {
     e.preventDefault();
+    if (saving) return;
     const movie = movies.find((m) => m.id === editing.movieId);
     if (
       !movie ||
@@ -51,20 +54,40 @@ export const AdminShows = () => {
       return;
     }
     const show = {
-      ...editing,
-      id: editing.id || crypto.randomUUID(),
+      movieId: editing.movieId,
+      roomId: editing.roomId,
+      date: editing.date,
+      time: editing.time,
       price: +editing.price,
       vipPrice: +editing.vipPrice,
-      sold: editing.sold || [],
     };
-    setShows((current) =>
-      editing.id
-        ? current.map((s) => (s.id === show.id ? show : s))
-        : [...current, show],
-    );
-    setDate(show.date);
-    setEditing(null);
+    setSaving(true);
     setError("");
+    try {
+      const saved = editing.id
+        ? await api.put(`/shows/${encodeURIComponent(editing.id)}`, show)
+        : await api.post("/shows", show);
+      setShows((current) => editing.id
+        ? current.map((s) => s.id === saved.id ? saved : s)
+        : [...current, saved]);
+      setDate(saved.date);
+      setEditing(null);
+    } catch (error) {
+      setError(error.status ? error.message : "Không kết nối được backend. Kiểm tra server rồi thử lại.");
+    } finally { setSaving(false); }
+  };
+  const remove = async (show) => {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await api.delete(`/shows/${encodeURIComponent(show.id)}`);
+      setShows((current) => current.filter((s) => s.id !== show.id));
+      setDeleting(null);
+      if (editing?.id === show.id) setEditing(null);
+    } catch (error) {
+      setError(error.status ? error.message : "Không kết nối được backend. Kiểm tra server rồi thử lại.");
+    } finally { setSaving(false); }
   };
   const filtered = shows
     .filter((s) => s.date === date)
@@ -76,6 +99,7 @@ export const AdminShows = () => {
           Sắp xếp phim và thời gian chiếu cho từng phòng.
         </PageHeading>
         <Button
+          disabled={saving}
           onClick={() => {
             setEditing({
               movieId: movies[0]?.id || "",
@@ -98,7 +122,7 @@ export const AdminShows = () => {
         <form className="admin-editor" onSubmit={save}>
           <EditorHeader
             title={editing.id ? "Sửa suất chiếu" : "Thêm suất chiếu"}
-            onClose={() => setEditing(null)}
+            onClose={() => { if (!saving) setEditing(null); }}
           />
           <div className="form-grid">
             <Field label="Phim">
@@ -169,8 +193,8 @@ export const AdminShows = () => {
               />
             </Field>
           </div>
-          <Button type="submit">
-            Lưu suất chiếu <Arrow />
+          <Button type="submit" disabled={saving}>
+            {saving ? "Đang lưu…" : "Lưu suất chiếu"} <Arrow />
           </Button>
         </form>
       )}
@@ -211,6 +235,7 @@ export const AdminShows = () => {
                   <div className="table-actions">
                     <button
                       className="icon-button"
+                      disabled={saving}
                       aria-label={`Sửa suất ${show.time}`}
                       onClick={() => {
                         if (locked(show.id))
@@ -227,6 +252,7 @@ export const AdminShows = () => {
                     </button>
                     <button
                       className="icon-button"
+                      disabled={saving}
                       aria-label={`Xóa suất ${show.time}`}
                       onClick={() => {
                         if (locked(show.id))
@@ -240,17 +266,14 @@ export const AdminShows = () => {
                       <>
                         <button
                           className="text-button"
-                          onClick={() => {
-                            setShows((current) =>
-                              current.filter((s) => s.id !== show.id),
-                            );
-                            setDeleting(null);
-                          }}
+                          disabled={saving}
+                          onClick={() => remove(show)}
                         >
                           Xác nhận xóa
                         </button>
                         <button
                           className="text-button"
+                          disabled={saving}
                           onClick={() => setDeleting(null)}
                         >
                           Giữ lại

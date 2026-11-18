@@ -55,13 +55,17 @@ const startSession = (account) => {
   return publicUser(account);
 };
 
+const startApiSession = (result) => {
+  sessionStorage.setItem("udu-token", result.token);
+  sessionStorage.setItem("udu-api-user", JSON.stringify(publicUser(result.user)));
+  sessionStorage.removeItem(SESSION_KEY);
+  return publicUser(result.user);
+};
+
 export const registerAccount = async ({ name, email, password }) => {
   try {
     const res = await api.post("/auth/register", { name, email, password });
-    if (res.token) {
-      sessionStorage.setItem("udu-token", res.token);
-    }
-    return res.user;
+    return startApiSession(res);
   } catch (err) {
     if (err.status) {
       throw new Error(err.message);
@@ -90,10 +94,7 @@ export const registerAccount = async ({ name, email, password }) => {
 export const loginAccount = async ({ email, password }) => {
   try {
     const res = await api.post("/auth/login", { email, password });
-    if (res.token) {
-      sessionStorage.setItem("udu-token", res.token);
-    }
-    return res.user;
+    return startApiSession(res);
   } catch (err) {
     if (err.status) {
       throw new Error(err.message);
@@ -110,6 +111,10 @@ export const loginAccount = async ({ email, password }) => {
 };
 
 export const getCurrentUser = () => {
+  if (sessionStorage.getItem("udu-token")) {
+    try { return JSON.parse(sessionStorage.getItem("udu-api-user")) || null; }
+    catch { return null; }
+  }
   const id = sessionStorage.getItem(SESSION_KEY);
   if (!id) return null;
   const account = readAccounts().find((item) => item.id === id);
@@ -118,5 +123,6 @@ export const getCurrentUser = () => {
 
 export const logoutAccount = () => {
   sessionStorage.removeItem("udu-token");
+  sessionStorage.removeItem("udu-api-user");
   sessionStorage.removeItem(SESSION_KEY);
 };

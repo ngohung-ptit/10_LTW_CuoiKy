@@ -10,7 +10,8 @@
     "dev": "nodemon server.js",
     "server:dev": "nodemon server.js",
     "seed": "node src/seed/seedData.js",
-    "test": "node testApi.js"
+    "test": "node testApi.js",
+    "test:persistence": "node --test tests/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -22,7 +23,8 @@
     "qrcode": "^1.5.4",
     "sequelize": "^6.37.5",
     "socket.io": "^4.8.1",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "udu-cinematic": "file:.."
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

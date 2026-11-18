@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import app from "./src/app.js";
 import { sequelize } from "./src/config/database.js";
 import "./src/models/index.js";
+import { migrateMoviePoster } from "./src/config/migrateMoviePoster.js";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ const startServer = async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
+    await migrateMoviePoster(sequelize);
     console.log("Database connected and synchronized successfully.");
 
     server.listen(PORT, () => {

@@ -53,8 +53,8 @@ export const AppProvider = ({ children, initialUser = null }) => {
           api.get("/shows"),
         ]);
         if (active) {
-          if (serverMovies?.length) setMovies(serverMovies);
-          if (serverRooms?.length) {
+          if (Array.isArray(serverMovies)) setMovies(serverMovies);
+          if (Array.isArray(serverRooms)) {
             const formattedRooms = serverRooms.map((r) => ({
               ...r,
               vipRows: Array.isArray(r.vipRows)
@@ -65,7 +65,7 @@ export const AppProvider = ({ children, initialUser = null }) => {
             }));
             setRooms(formattedRooms);
           }
-          if (serverShows?.length) setShows(serverShows);
+          if (Array.isArray(serverShows)) setShows(serverShows);
         }
       } catch {
         // Fallback to local data

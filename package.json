@@ -9,5 +9,9 @@
     "build": "npm --prefix client run build",
     "test": "npm --prefix client test -- --watchAll=false --runInBand",
     "test:server": "node server/testApi.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "mysql2": "^3.24.6"
   }
 }

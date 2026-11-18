@@ -1,3 +1,4 @@
+import { posterSrc } from "../posters";
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { Clock3, Play, MapPin } from "lucide-react";
@@ -32,7 +33,7 @@ export const MovieDetailPage = () => {
       <div className="movie-detail">
         <img
           className="detail-poster"
-          src={`/assets/images/${movie.poster}`}
+          src={posterSrc(movie.poster)}
           alt={`Áp phích ${movie.title}`}
           width="500"
           height="750"

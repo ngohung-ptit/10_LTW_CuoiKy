@@ -1,3 +1,4 @@
+import { posterSrc } from "./posters";
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -94,7 +95,7 @@ export const BookingSummary = ({
   <aside className="booking-summary">
     <div className="summary-movie">
       <img
-        src={`/assets/images/${movie.poster}`}
+        src={posterSrc(movie.poster)}
         alt={`Áp phích ${movie.title}`}
         width="80"
         height="120"

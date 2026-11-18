@@ -75,9 +75,11 @@ Dự án sử dụng Sequelize ORM nên đã hỗ trợ sẵn cả **SQLite** v�
 | `GET` | `/api/rooms` | Công khai | Lấy danh sách phòng chiếu và cấu hình hàng/cột/VIP |
 | `POST` | `/api/rooms` | Admin | Thêm phòng chiếu mới |
 | `PUT` | `/api/rooms/:id` | Admin | Cập nhật cấu hình phòng chiếu |
+| `DELETE` | `/api/rooms/:id` | Admin | Xóa phòng chưa có suất chiếu |
 | `GET` | `/api/shows` | Công khai | Lấy danh sách suất chiếu kèm danh sách ghế đã bán |
 | `GET` | `/api/shows/:id` | Công khai | Chi tiết suất chiếu |
 | `POST` | `/api/shows` | Admin | Tạo suất chiếu (tự động kiểm tra chống trùng giờ trong cùng phòng) |
+| `PUT` | `/api/shows/:id` | Admin | Sửa suất chưa có vé, kiểm tra lại chồng giờ |
 | `DELETE` | `/api/shows/:id` | Admin | Xóa suất chiếu chưa có vé đặt |
 | `POST` | `/api/tickets` | Member | Đặt vé xem phim (SQL Transaction chống đặt trùng ghế, trả về 409 Conflict) |
 | `GET` | `/api/tickets/my-tickets` | Member | Lấy danh sách vé đã đặt của người dùng |
@@ -89,3 +91,21 @@ Dự án sử dụng Sequelize ORM nên đã hỗ trợ sẵn cả **SQLite** v�
 ## Danh sách tài khoản mẫu
 - Quản trị viên: `admin@udu.example` / `Admin@12345`
 - Thành viên: `member@udu.example` / `Member@12345`
+
+## Đồng bộ quản trị phòng và suất chiếu
+
+Frontend gọi POST/PUT/DELETE đến backend khi thêm/sửa/xóa phòng và suất. Danh sách chỉ cập nhật sau khi API ghi database thành công; nếu mất kết nối hoặc bị từ chối, giữ nguyên danh sách và hiển thị lỗi. GET lấy cả danh sách rỗng để dữ liệu đã xóa không xuất hiện lại từ cache.
+
+Khởi động lại backend bằng `npm run server` ở thư mục gốc sau khi cập nhật code; chạy frontend ở terminal khác bằng `npm start`. Đăng xuất rồi đăng nhập admin khi backend đang chạy để nhận JWT hợp lệ. Phiên API được giữ trong cùng tab khi tải lại trang; backend vẫn kiểm tra JWT/quyền trên mỗi thao tác.
+
+Không đổi sơ đồ ghế hoặc xóa phòng khi phòng còn suất chiếu. Suất đã có vé (kể cả vé đã hủy) không được sửa/xóa để giữ lịch sử; vẫn có thể sửa/xóa suất chưa có vé. Server kiểm tra cấu hình hàng/cột/VIP, giá vé, thời gian tương lai và chồng giờ khi tạo lẫn sửa suất.
+
+Kiểm thử ghi/đọc lại database bằng HTTP, dùng SQLite in-memory riêng, không thay dữ liệu MySQL hiện có:
+
+```bash
+npm --prefix server run test:persistence
+```
+
+Để kiểm tra thủ công: thêm phòng → xem GET `/api/rooms` hoặc bảng `rooms`; sửa tên/cấu hình → tải lại trang để đối chiếu; thêm/sửa/xóa suất chưa có vé → kiểm tra GET `/api/shows` hoặc bảng `shows`. Sau khi xóa hết suất của phòng, có thể xóa phòng. Các request ghi cần Bearer Token của admin.
+
+Lưu ý: script seed hiện dùng `sync({ force: true })`, sẽ tạo lại bảng và xóa dữ liệu đang có. Không cần chạy seed để áp dụng các API này.

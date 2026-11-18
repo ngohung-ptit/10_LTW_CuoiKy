@@ -1,3 +1,4 @@
+import { posterSrc } from "../posters";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "../context";
@@ -29,7 +30,7 @@ export const SchedulePage = () => {
           <article className="schedule-row" key={movie.id}>
             <Link className="schedule-poster m-zoom" to={`/phim/${movie.id}`}>
               <img
-                src={`/assets/images/${movie.poster}`}
+                src={posterSrc(movie.poster)}
                 alt={`Áp phích ${movie.title}`}
                 width="100"
                 height="150"

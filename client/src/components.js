@@ -1,3 +1,4 @@
+import { posterSrc, posterSrcSet } from "./posters";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, Navigate } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Menu, X, Ticket, MapPin, Clock3, Search, ChevronRight, LogOut } from "lucide-react";
@@ -179,8 +180,8 @@ export const MovieCard = ({ movie }) => (
       aria-label={`Xem phim ${movie.title}`}
     >
       <img
-        src={`/assets/images/${movie.poster}`}
-        srcSet={`/assets/images/${movie.poster.replace('.jpg', '-small.jpg')} 342w, /assets/images/${movie.poster} 500w`}
+        src={posterSrc(movie.poster)}
+        srcSet={posterSrcSet(movie.poster)}
         sizes="(max-width: 639px) calc((100vw - 56px) / 2), (max-width: 1023px) calc((100vw - 88px) / 2), 302px"
         alt={`Áp phích ${movie.title}`}
         width="500"

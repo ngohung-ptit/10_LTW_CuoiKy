@@ -42,7 +42,7 @@ export const Movie = sequelize.define(
       allowNull: true,
     },
     poster: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT("medium"),
       allowNull: false,
     },
     trailer: {

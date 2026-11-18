@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { Show, Movie, Room, Ticket, TicketSeat } from "../models/index.js";
 
 const parseShowDateTime = (date, time) => {
@@ -90,9 +91,14 @@ export const getShowById = async (req, res, next) => {
   }
 };
 
-export const createShow = async (req, res, next) => {
+const saveShow = async (req, res, next) => {
   try {
-    const { movieId, roomId, date, time, price, vipPrice } = req.body;
+    const current = req.params.id ? await Show.findByPk(req.params.id) : null;
+    if (req.params.id && !current) return res.status(404).json({ error: "Không tìm thấy suất chiếu." });
+    if (current && await Ticket.count({ where: { showId: current.id } })) {
+      return res.status(400).json({ error: "Suất đã có vé, không thể thay đổi thông tin." });
+    }
+    const { movieId, roomId, date, time, price, vipPrice } = { ...current?.toJSON(), ...req.body };
 
     if (!movieId || !roomId || !date || !time) {
       return res.status(400).json({ error: "Vui lòng nhập đầy đủ phim, phòng chiếu, ngày và giờ chiếu." });
@@ -113,9 +119,9 @@ export const createShow = async (req, res, next) => {
       return res.status(400).json({ error: "Thời gian chiếu phải ở trong tương lai." });
     }
 
-    const numPrice = Number(price) || 75000;
-    const numVipPrice = Number(vipPrice) || 95000;
-    if (numPrice <= 0 || numVipPrice < numPrice) {
+    const numPrice = Number(price ?? 75000);
+    const numVipPrice = Number(vipPrice ?? 95000);
+    if (!Number.isInteger(numPrice) || !Number.isInteger(numVipPrice) || numPrice <= 0 || numVipPrice < numPrice) {
       return res.status(400).json({ error: "Giá vé VIP không được thấp hơn giá vé thường." });
     }
 
@@ -132,31 +138,33 @@ export const createShow = async (req, res, next) => {
       const otherStart = parseShowDateTime(s.date, s.time).getTime();
       const otherEnd = otherStart + otherMovieDuration * 60000;
 
-      return start < otherEnd && end > otherStart;
+      return s.id !== current?.id && start < otherEnd && end > otherStart;
     });
 
     if (isOverlap) {
       return res.status(400).json({ error: "Suất chiếu bị chồng giờ với một suất khác trong cùng phòng." });
     }
 
-    const showId = `${date}-${movieId}-${Date.now().toString().slice(-4)}`;
-    const show = await Show.create({
-      id: showId,
+    const data = {
       movieId,
       roomId,
       date,
       time,
       price: numPrice,
       vipPrice: numVipPrice,
-    });
+    };
+    const show = current ? await current.update(data) : await Show.create({ id: randomUUID(), ...data });
 
     const plain = show.toJSON();
     plain.sold = [];
-    res.status(201).json(plain);
+    res.status(current ? 200 : 201).json(plain);
   } catch (error) {
     next(error);
   }
 };
+
+export const createShow = saveShow;
+export const updateShow = saveShow;
 
 export const deleteShow = async (req, res, next) => {
   try {
@@ -168,7 +176,7 @@ export const deleteShow = async (req, res, next) => {
     }
 
     const bookedTickets = await Ticket.count({
-      where: { showId: id, status: "confirmed" },
+      where: { showId: id },
     });
     if (bookedTickets > 0) {
       return res.status(400).json({ error: "Không thể xóa suất chiếu đã có vé được đặt." });

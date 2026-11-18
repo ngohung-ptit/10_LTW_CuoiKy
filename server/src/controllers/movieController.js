@@ -66,12 +66,17 @@ export const createMovie = async (req, res, next) => {
       return res.status(400).json({ error: "Vui lòng nhập tên phim, thể loại và thời lượng." });
     }
 
-    const movieId =
-      id?.trim() ||
-      title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+    const firstWord = title
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/đ/g, "d")
+      .match(/[a-z0-9]+/)?.[0];
+    const movieId = id?.trim() || firstWord;
+
+    if (!movieId) {
+      return res.status(400).json({ error: "Tên phim cần có chữ hoặc số để tạo mã phim." });
+    }
 
     const movie = await Movie.create({
       id: movieId,
@@ -91,6 +96,9 @@ export const createMovie = async (req, res, next) => {
 
     res.status(201).json(movie);
   } catch (error) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({ error: "Mã phim đã tồn tại. Từ đầu tiên của tên phim phải khác phim đã có." });
+    }
     next(error);
   }
 };

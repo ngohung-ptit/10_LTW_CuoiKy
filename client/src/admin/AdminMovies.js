@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { posterSrc, readJpegPoster } from "../posters";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useApp } from "../context";
 import { Arrow, Button, Field, Notice, PageHeading } from "../components";
 import { EditorHeader } from "./EditorHeader";
+import { api } from "../api";
 
 // State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminMovies = () => {
@@ -10,6 +12,38 @@ export const AdminMovies = () => {
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const uploadVersion = useRef(0);
+  useEffect(() => () => { uploadVersion.current += 1; }, []);
+  const openEditor = (movie) => {
+    if (saving) return;
+    uploadVersion.current += 1;
+    setUploading(false);
+    setEditing(movie);
+    setError("");
+  };
+  const uploadPoster = async (event) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+    const version = ++uploadVersion.current;
+    setUploading(true);
+    setError("");
+    try {
+      const poster = await readJpegPoster(file);
+      if (version === uploadVersion.current) {
+        setEditing((current) => current && { ...current, poster });
+      }
+    } catch (error) {
+      if (version === uploadVersion.current) {
+        input.value = "";
+        setError(error.message);
+      }
+    } finally {
+      if (version === uploadVersion.current) setUploading(false);
+    }
+  };
   const empty = {
     title: "",
     subtitle: "",
@@ -24,8 +58,9 @@ export const AdminMovies = () => {
     description: "",
     status: "showing",
   };
-  const save = (e) => {
+  const save = async (e) => {
     e.preventDefault();
+    if (uploading || saving) return;
     if (
       !editing.title.trim() ||
       !editing.director.trim() ||
@@ -46,15 +81,36 @@ export const AdminMovies = () => {
       ...editing,
       title: editing.title.trim(),
       duration: +editing.duration,
-      id: editing.id || crypto.randomUUID(),
     };
-    setMovies((current) =>
-      editing.id
-        ? current.map((m) => (m.id === movie.id ? movie : m))
-        : [...current, movie],
-    );
-    setEditing(null);
+    setSaving(true);
     setError("");
+    try {
+      const saved = editing.id
+        ? await api.put(`/movies/${encodeURIComponent(movie.id)}`, movie)
+        : await api.post("/movies", movie);
+      setMovies((current) => editing.id
+        ? current.map((m) => m.id === saved.id ? saved : m)
+        : [...current, saved]);
+      setEditing(null);
+    } catch (error) {
+      setError(error.status ? error.message : "Không kết nối được backend. Hãy kiểm tra server rồi thử lưu lại.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const deleteMovie = async (id) => {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await api.delete(`/movies/${encodeURIComponent(id)}`);
+      setMovies((current) => current.filter((movie) => movie.id !== id));
+      setDeleting(null);
+    } catch (error) {
+      setError(error.status ? error.message : "Không kết nối được backend. Chưa xóa phim.");
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <>
@@ -63,9 +119,9 @@ export const AdminMovies = () => {
           Thông tin phim và trạng thái hiển thị tại rạp.
         </PageHeading>
         <Button
+          disabled={saving}
           onClick={() => {
-            setEditing(empty);
-            setError("");
+            openEditor(empty);
           }}
         >
           <Plus size={18} />
@@ -77,8 +133,9 @@ export const AdminMovies = () => {
         <form className="admin-editor" onSubmit={save}>
           <EditorHeader
             title={editing.id ? "Sửa phim" : "Thêm phim"}
-            onClose={() => setEditing(null)}
+            onClose={() => openEditor(null)}
           />
+          <fieldset className="movie-editor-fields" disabled={saving}>
           <div className="form-grid">
             {[
               ["title", "Tên phim"],
@@ -148,24 +205,16 @@ export const AdminMovies = () => {
                 <option value="upcoming">Sắp chiếu</option>
               </select>
             </Field>
-            <Field label="Áp phích có sẵn">
-              <select
-                value={editing.poster}
-                onChange={(e) =>
-                  setEditing({ ...editing, poster: e.target.value })
-                }
-              >
-                {[
-                  "interstellar.jpg",
-                  "dune.jpg",
-                  "soul.jpg",
-                  "spirited.jpg",
-                  "inception.jpg",
-                  "your-name.jpg",
-                ].map((p) => (
-                  <option key={p}>{p}</option>
-                ))}
-              </select>
+            <Field label="Tải áp phích JPG">
+              <input
+                type="file"
+                accept=".jpg,.jpeg,image/jpeg"
+                onChange={uploadPoster}
+                aria-describedby="poster-upload-help"
+              />
+              <span id="poster-upload-help" className="poster-upload-help" role="status">
+                {uploading ? "Đang xử lý ảnh…" : "Chọn ảnh JPG hoặc JPEG, tối đa 5 MB."}
+              </span>
             </Field>
             <Field label="Mã video YouTube">
               <input
@@ -185,9 +234,10 @@ export const AdminMovies = () => {
               }
             />
           </Field>
-          <Button type="submit">
-            Lưu phim <Arrow />
+          <Button type="submit" disabled={uploading || saving}>
+            {saving ? "Đang lưu…" : "Lưu phim"} <Arrow />
           </Button>
+          </fieldset>
         </form>
       )}
       <div className="table-scroll">
@@ -207,7 +257,7 @@ export const AdminMovies = () => {
                 <td>
                   <div className="table-movie">
                     <img
-                      src={`/assets/images/${movie.poster}`}
+                      src={posterSrc(movie.poster)}
                       alt=""
                       width="36"
                       height="54"
@@ -226,8 +276,7 @@ export const AdminMovies = () => {
                       className="icon-button"
                       aria-label={`Sửa ${movie.title}`}
                       onClick={() => {
-                        setEditing({ ...movie });
-                        setError("");
+                        openEditor({ ...movie });
                       }}
                     >
                       <Pencil size={16} />
@@ -249,12 +298,8 @@ export const AdminMovies = () => {
                       <>
                         <button
                           className="text-button"
-                          onClick={() => {
-                            setMovies((current) =>
-                              current.filter((m) => m.id !== movie.id),
-                            );
-                            setDeleting(null);
-                          }}
+                          disabled={saving}
+                          onClick={() => deleteMovie(movie.id)}
                         >
                           Xác nhận xóa
                         </button>

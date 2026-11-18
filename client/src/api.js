@@ -3,6 +3,13 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 const getToken = () => sessionStorage.getItem("udu-token");
 
 export const api = {
+  async put(endpoint, body) {
+    return sendMutation("PUT", endpoint, body);
+  },
+
+  async delete(endpoint) {
+    return sendMutation("DELETE", endpoint);
+  },
   async get(endpoint) {
     const token = getToken();
     const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -60,5 +67,24 @@ export const api = {
     }
     return data;
   },
+};
+
+const sendMutation = async (method, endpoint, body) => {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const error = new Error(data.error || "Lỗi khi gọi API.");
+    error.status = res.status;
+    throw error;
+  }
+  return data;
 };
 

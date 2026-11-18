@@ -1,3 +1,4 @@
+import { posterSrc } from "../posters";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -58,7 +59,7 @@ export const TicketsPage = () => {
           return (
             <article className="ticket-card" key={ticket.id}>
               <img
-                src={`/assets/images/${movie?.poster || "interstellar.jpg"}`}
+                src={posterSrc(movie?.poster || "interstellar.jpg")}
                 alt={movie?.title || "Phim"}
                 width="120"
                 height="180"

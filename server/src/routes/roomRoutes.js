@@ -4,6 +4,7 @@ import {
   getRoomById,
   createRoom,
   updateRoom,
+  deleteRoom,
 } from "../controllers/roomController.js";
 import { verifyToken, requireAdmin } from "../middlewares/authMiddleware.js";
 
@@ -13,6 +14,7 @@ router.get("/", getRooms);
 router.get("/:id", getRoomById);
 router.post("/", verifyToken, requireAdmin, createRoom);
 router.put("/:id", verifyToken, requireAdmin, updateRoom);
+router.delete("/:id", verifyToken, requireAdmin, deleteRoom);
 
 export default router;
 

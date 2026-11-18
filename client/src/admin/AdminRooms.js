@@ -3,14 +3,17 @@ import { Plus, Armchair } from "lucide-react";
 import { useApp } from "../context";
 import { Arrow, Button, Field, Notice, PageHeading } from "../components";
 import { EditorHeader } from "./EditorHeader";
+import { api } from "../api";
 
 // State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminRooms = () => {
   const { rooms, setRooms, shows } = useApp();
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
-  const save = (e) => {
+  const [saving, setSaving] = useState(false);
+  const save = async (e) => {
     e.preventDefault();
+    if (saving) return;
     if (
       !editing.name.trim() ||
       +editing.rows < 1 ||
@@ -48,19 +51,40 @@ export const AdminRooms = () => {
       return;
     }
     const room = {
-      id: editing.id || crypto.randomUUID(),
       name: editing.name.trim(),
       rows: +editing.rows,
       columns: +editing.columns,
       vipRows: [...new Set(vipRows)],
     };
-    setRooms((current) =>
-      editing.id
-        ? current.map((r) => (r.id === room.id ? room : r))
-        : [...current, room],
-    );
-    setEditing(null);
+    setSaving(true);
     setError("");
+    try {
+      const saved = editing.id
+        ? await api.put(`/rooms/${encodeURIComponent(editing.id)}`, room)
+        : await api.post("/rooms", room);
+      setRooms((current) => editing.id
+        ? current.map((r) => r.id === saved.id ? saved : r)
+        : [...current, saved]);
+      setEditing(null);
+    } catch (error) {
+      setError(error.status ? error.message : "Không kết nối được backend. Kiểm tra server rồi thử lại.");
+    } finally { setSaving(false); }
+  };
+  const remove = async (room) => {
+    if (saving) return;
+    if (shows.some((s) => s.roomId === room.id)) {
+      setError("Không thể xóa phòng đang có suất chiếu.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await api.delete(`/rooms/${encodeURIComponent(room.id)}`);
+      setRooms((current) => current.filter((r) => r.id !== room.id));
+      if (editing?.id === room.id) setEditing(null);
+    } catch (error) {
+      setError(error.status ? error.message : "Không kết nối được backend. Kiểm tra server rồi thử lại.");
+    } finally { setSaving(false); }
   };
   return (
     <>
@@ -69,6 +93,7 @@ export const AdminRooms = () => {
           Sơ đồ ghế được tạo từ cấu hình của từng phòng.
         </PageHeading>
         <Button
+          disabled={saving}
           onClick={() =>
             setEditing({ name: "", rows: 8, columns: 10, vipText: "D,E,F" })
           }
@@ -82,7 +107,7 @@ export const AdminRooms = () => {
         <form className="admin-editor" onSubmit={save}>
           <EditorHeader
             title="Cấu hình phòng chiếu"
-            onClose={() => setEditing(null)}
+            onClose={() => { if (!saving) setEditing(null); }}
           />
           <div className="form-grid">
             <Field label="Tên phòng">
@@ -124,8 +149,8 @@ export const AdminRooms = () => {
               />
             </Field>
           </div>
-          <Button type="submit">
-            Lưu phòng <Arrow />
+          <Button type="submit" disabled={saving}>
+            {saving ? "Đang lưu…" : "Lưu phòng"} <Arrow />
           </Button>
         </form>
       )}
@@ -166,6 +191,7 @@ export const AdminRooms = () => {
               <div className="table-actions">
                 <button
                   className="text-button"
+                  disabled={saving}
                   onClick={() => {
                     if (shows.some((s) => s.roomId === room.id)) {
                       setError(
@@ -181,14 +207,8 @@ export const AdminRooms = () => {
                 </button>
                 <button
                   className="text-button"
-                  onClick={() => {
-                    if (shows.some((s) => s.roomId === room.id))
-                      setError("Không thể xóa phòng đang có suất chiếu.");
-                    else
-                      setRooms((current) =>
-                        current.filter((r) => r.id !== room.id),
-                      );
-                  }}
+                  disabled={saving}
+                  onClick={() => remove(room)}
                 >
                   Xóa phòng
                 </button>
