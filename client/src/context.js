@@ -18,7 +18,7 @@ import {
 
 const AppContext = createContext(null);
 
-export const AppProvider = ({ children, initialUser = null }) => {
+export const AppProvider = ({ children, initialUser = null, refreshKey }) => {
   const [user, setUser] = useState(() => initialUser || getCurrentUser());
 
   const authenticate = async (action, fields) => {
@@ -67,15 +67,17 @@ export const AppProvider = ({ children, initialUser = null }) => {
           }
           if (Array.isArray(serverShows)) setShows(serverShows);
         }
-      } catch {
-        // Fallback to local data
+      } catch (error) {
+        if (active) {
+          console.warn("Không thể tải dữ liệu API; đang dùng dữ liệu đã lưu.", error);
+        }
       }
     };
     fetchData();
     return () => {
       active = false;
     };
-  }, [setMovies, setRooms, setShows]);
+  }, [refreshKey, setMovies, setRooms, setShows]);
 
   const book = (show, seats, total) => {
     let latest = tickets;

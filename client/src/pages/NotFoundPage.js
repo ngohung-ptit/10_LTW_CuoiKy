@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Arrow, EmptyState } from "../components";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const NotFoundPage = () => (
   <div className="wrap page-shell">
     <EmptyState

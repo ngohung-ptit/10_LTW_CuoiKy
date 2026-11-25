@@ -1,4 +1,3 @@
-/* Trang chủ: ảnh phim tiêu điểm bên phải, thông tin và nút đặt vé bên trái. */
 .home-intro {
   min-height: 100svh;
   padding: calc(var(--nav) + 56px) 0 56px;

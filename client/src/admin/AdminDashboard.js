@@ -3,7 +3,6 @@ import { useApp } from "../context";
 import { days, money, dateLabel, showDate } from "../data";
 import { PageHeading } from "../components";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminDashboard = () => {
   const { movies, tickets, shows } = useApp();
   const [date, setDate] = useState("");

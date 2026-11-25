@@ -40,3 +40,7 @@ yarn-error.log*
 
 # van de ky nang
 /documentation.md
+.postman
+.vscode
+.taste-skill
+/docs

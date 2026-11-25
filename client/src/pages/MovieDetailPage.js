@@ -7,7 +7,6 @@ import { days } from "../data";
 import { Arrow, Breadcrumb, Button, DatePicker, Notice, Showtimes } from "../components";
 import { NotFoundPage } from "./NotFoundPage";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const MovieDetailPage = () => {
   const { movieId } = useParams();
   const { movies } = useApp();

@@ -7,7 +7,6 @@ import { useApp } from "../context";
 import { dateLabel, money, showDate } from "../data";
 import { Arrow, Breadcrumb, EmptyState, Notice, PageHeading } from "../components";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const TicketsPage = () => {
   const { tickets, movies, user, cancelTicket } = useApp();
   const [filter, setFilter] = useState("all");

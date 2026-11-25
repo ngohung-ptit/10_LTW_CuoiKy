@@ -4,7 +4,6 @@ import { dateLabel, days, normalise, showDate } from "../data";
 import { useDebounce } from "../hooks";
 import { Breadcrumb, EmptyState, MovieCard, PageHeading, SearchField } from "../components";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const MoviesPage = () => {
   const { movies, shows } = useApp();
   const [query, setQuery] = useState("");

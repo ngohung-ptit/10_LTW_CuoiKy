@@ -87,9 +87,10 @@ export const registerAccount = async ({ name, email, password }) => {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
     const baseId = emailPrefix ? `udu-${emailPrefix}` : "udu-user";
+    const existingAccountIds = new Set(accounts.map((account) => account.id));
     let accountId = baseId;
     let counter = 2;
-    while (accounts.some((account) => account.id === accountId)) {
+    while (existingAccountIds.has(accountId)) {
       accountId = `${baseId}-${counter}`;
       counter++;
     }

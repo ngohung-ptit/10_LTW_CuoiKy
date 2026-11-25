@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import { AppProvider } from "./context";
@@ -20,12 +20,17 @@ import { AdminShows } from "./admin/AdminShows";
 import "./App.css";
 import "./responsive.css";
 
+const RouteAppProvider = ({ children }) => {
+  const { pathname } = useLocation();
+  return <AppProvider refreshKey={pathname}>{children}</AppProvider>;
+};
+
 const App = () => (
   <Provider store={store}>
-    <AppProvider>
-      <BrowserRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
+    <BrowserRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
+      <RouteAppProvider>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -50,8 +55,8 @@ const App = () => (
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
-      </BrowserRouter>
-    </AppProvider>
+      </RouteAppProvider>
+    </BrowserRouter>
   </Provider>
 );
 export default App;

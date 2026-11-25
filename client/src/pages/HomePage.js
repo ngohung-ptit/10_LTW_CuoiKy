@@ -4,7 +4,6 @@ import { useApp } from "../context";
 import { MovieCard } from "../components";
 import "./HomePage.css";
 
-// Trang chủ chỉ giới thiệu phim. Tìm kiếm và bộ lọc nằm ở trang Phim.
 export const HomePage = () => {
   const { movies } = useApp();
   const showingMovies = movies.filter((movie) => movie.status === "showing");

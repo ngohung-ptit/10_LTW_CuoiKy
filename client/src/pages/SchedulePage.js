@@ -5,7 +5,6 @@ import { useApp } from "../context";
 import { days, normalise } from "../data";
 import { Breadcrumb, DatePicker, EmptyState, PageHeading, SearchField, Showtimes } from "../components";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const SchedulePage = () => {
   const { movies } = useApp();
   const [date, setDate] = useState(days[0]);
