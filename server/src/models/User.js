@@ -1,45 +1,53 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import mongoose from "mongoose";
 import { buildUserBaseId, generateUniqueId } from "../utils/idGenerator.js";
+import { applyStringIdSchema } from "./schemaOptions.js";
 
-export const User = sequelize.define(
-  "User",
+const userSchema = new mongoose.Schema(
   {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
+    _id: {
+      type: String,
+      trim: true,
     },
     name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
+      trim: true,
     },
     email: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
       unique: true,
-      validate: {
-        isEmail: true,
-      },
+      lowercase: true,
+      trim: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Địa chỉ email không hợp lệ."],
     },
     password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     role: {
-      type: DataTypes.ENUM("member", "admin"),
-      defaultValue: "member",
+      type: String,
+      enum: ["member", "admin"],
+      default: "member",
     },
   },
   {
-    tableName: "users",
+    collection: "users",
     timestamps: true,
+    _id: false,
   }
 );
 
-User.beforeValidate(async (user) => {
-  if (!user.id && user.email) {
-    const baseId = buildUserBaseId(user);
-    user.id = await generateUniqueId(baseId, (id) => User.findByPk(id));
-  }
+applyStringIdSchema(userSchema, {
+  generateId: async (doc) => {
+    if (!doc.email && !doc.name) return undefined;
+    const baseId = buildUserBaseId(doc);
+    return generateUniqueId(baseId, (id) => User.exists({ _id: id }));
+  },
+  transform: (ret) => {
+    delete ret.password;
+    return ret;
+  },
 });
 
+export const User = mongoose.models.User || mongoose.model("User", userSchema);

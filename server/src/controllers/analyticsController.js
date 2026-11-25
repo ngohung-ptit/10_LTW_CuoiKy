@@ -1,49 +1,53 @@
-import { Op, fn, col } from "sequelize";
-import { Ticket, TicketSeat, Show, Movie } from "../models/index.js";
-
-const parseShowDateTime = (date, time) => {
-  return new Date(`${date}T${time}:00+07:00`);
-};
+import { Ticket, Show, Movie } from "../models/index.js";
+import { parseShowDateTime } from "../utils/queryHelpers.js";
 
 export const getDashboardStats = async (req, res, next) => {
   try {
     const { date } = req.query;
 
-    const showWhere = {};
-    if (date) {
-      showWhere.date = date;
-    }
-
-    const tickets = await Ticket.findAll({
-      where: { status: "confirmed" },
-      include: [
-        {
-          model: Show,
+    const ticketPipeline = [
+      { $match: { status: "confirmed" } },
+      {
+        $lookup: {
+          from: "shows",
+          localField: "showId",
+          foreignField: "_id",
           as: "show",
-          where: showWhere,
         },
-        {
-          model: TicketSeat,
-          as: "seats",
+      },
+      { $unwind: "$show" },
+      ...(date ? [{ $match: { "show.date": date } }] : []),
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$total" },
+          confirmedCount: { $sum: 1 },
+          totalSeats: { $sum: { $size: { $ifNull: ["$seats", []] } } },
         },
-      ],
-    });
+      },
+    ];
 
-    const totalRevenue = tickets.reduce((sum, t) => sum + t.total, 0);
-    const confirmedCount = tickets.length;
-    const totalSeats = tickets.reduce((sum, t) => sum + (t.seats?.length || 0), 0);
+    const showFilter = date ? { date } : {};
+    const [statsResult, shows] = await Promise.all([
+      Ticket.aggregate(ticketPipeline),
+      Show.find(showFilter).select("date time"),
+    ]);
 
-    const allShows = await Show.findAll({
-      where: showWhere,
-    });
-    const upcomingShowsCount = allShows.filter(
-      (s) => parseShowDateTime(s.date, s.time) > new Date()
+    const summary = statsResult[0] || {
+      totalRevenue: 0,
+      confirmedCount: 0,
+      totalSeats: 0,
+    };
+
+    const now = Date.now();
+    const upcomingShowsCount = shows.filter(
+      (s) => parseShowDateTime(s.date, s.time).getTime() > now
     ).length;
 
     res.status(200).json({
-      totalRevenue,
-      confirmedCount,
-      totalSeats,
+      totalRevenue: summary.totalRevenue,
+      confirmedCount: summary.confirmedCount,
+      totalSeats: summary.totalSeats,
       upcomingShowsCount,
     });
   } catch (error) {
@@ -55,40 +59,55 @@ export const getRevenueByMovie = async (req, res, next) => {
   try {
     const { date } = req.query;
 
-    const showWhere = {};
-    if (date) {
-      showWhere.date = date;
-    }
-
-    const movies = await Movie.findAll();
-
-    const tickets = await Ticket.findAll({
-      where: { status: "confirmed" },
-      include: [
-        {
-          model: Show,
-          as: "show",
-          where: showWhere,
+    const result = await Movie.aggregate([
+      {
+        $lookup: {
+          from: "tickets",
+          let: { movieId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$movieId", "$$movieId"] },
+                status: "confirmed",
+              },
+            },
+            ...(date
+              ? [
+                  {
+                    $lookup: {
+                      from: "shows",
+                      localField: "showId",
+                      foreignField: "_id",
+                      as: "show",
+                    },
+                  },
+                  { $unwind: "$show" },
+                  { $match: { "show.date": date } },
+                ]
+              : []),
+          ],
+          as: "confirmedTickets",
         },
-        {
-          model: TicketSeat,
-          as: "seats",
+      },
+      {
+        $project: {
+          _id: 0,
+          movieId: "$_id",
+          title: 1,
+          total: { $sum: "$confirmedTickets.total" },
+          seats: {
+            $sum: {
+              $map: {
+                input: "$confirmedTickets",
+                as: "t",
+                in: { $size: { $ifNull: ["$$t.seats", []] } },
+              },
+            },
+          },
         },
-      ],
-    });
-
-    const result = movies.map((movie) => {
-      const movieTickets = tickets.filter((t) => t.movieId === movie.id);
-      const total = movieTickets.reduce((sum, t) => sum + t.total, 0);
-      const seats = movieTickets.reduce((sum, t) => sum + (t.seats?.length || 0), 0);
-
-      return {
-        movieId: movie.id,
-        title: movie.title,
-        total,
-        seats,
-      };
-    });
+      },
+      { $sort: { total: -1, title: 1 } },
+    ]);
 
     res.status(200).json(result);
   } catch (error) {
@@ -98,33 +117,39 @@ export const getRevenueByMovie = async (req, res, next) => {
 
 export const getRevenueByDate = async (req, res, next) => {
   try {
-    const tickets = await Ticket.findAll({
-      where: { status: "confirmed" },
-      include: [
-        {
-          model: Show,
+    const result = await Ticket.aggregate([
+      { $match: { status: "confirmed" } },
+      {
+        $lookup: {
+          from: "shows",
+          localField: "showId",
+          foreignField: "_id",
           as: "show",
-          attributes: ["date"],
         },
-      ],
-    });
-
-    const dailyMap = {};
-    for (const t of tickets) {
-      const showDate = t.show?.date;
-      if (showDate) {
-        dailyMap[showDate] = (dailyMap[showDate] || 0) + t.total;
-      }
-    }
-
-    const result = Object.entries(dailyMap).map(([date, total]) => ({
-      date,
-      total,
-    }));
+      },
+      { $unwind: "$show" },
+      {
+        $group: {
+          _id: "$show.date",
+          total: { $sum: "$total" },
+          ticketsCount: { $sum: 1 },
+          seats: { $sum: { $size: { $ifNull: ["$seats", []] } } },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          total: 1,
+          ticketsCount: 1,
+          seats: 1,
+        },
+      },
+      { $sort: { date: 1 } },
+    ]);
 
     res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
-

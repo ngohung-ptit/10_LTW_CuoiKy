@@ -7,10 +7,11 @@ html {
 }
 body {
   margin: 0;
-  background: #f8f6f0;
-  color: #25241f;
+  background: var(--bg, #f8f6f0);
+  color: var(--ink, #25241f);
   font-family: "Albert Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 button,
 input,

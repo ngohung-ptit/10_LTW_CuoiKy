@@ -2,10 +2,9 @@ import { Coupon } from "../models/index.js";
 
 export const getCoupons = async (req, res, next) => {
   try {
-    const coupons = await Coupon.findAll({
-      where: { isActive: true },
-      attributes: ["code", "title", "discountPercent", "maxDiscount"],
-    });
+    const coupons = await Coupon.find({ isActive: true }).select(
+      "code title discountPercent maxDiscount"
+    );
     res.status(200).json(coupons);
   } catch (error) {
     next(error);
@@ -15,12 +14,15 @@ export const getCoupons = async (req, res, next) => {
 export const verifyCoupon = async (req, res, next) => {
   try {
     const { code } = req.body;
-    if (!code) {
+    if (!code || !String(code).trim()) {
       return res.status(400).json({ error: "Vui lòng nhập mã giảm giá." });
     }
 
-    const coupon = await Coupon.findByPk(code.trim().toUpperCase());
-    if (!coupon || !coupon.isActive) {
+    const coupon = await Coupon.findOne({
+      _id: String(code).trim().toUpperCase(),
+      isActive: true,
+    });
+    if (!coupon) {
       return res.status(400).json({ error: "Mã giảm giá không hợp lệ hoặc đã hết hạn." });
     }
 
@@ -42,16 +44,20 @@ export const createCoupon = async (req, res, next) => {
       return res.status(400).json({ error: "Vui lòng nhập mã và mô tả mã giảm giá." });
     }
 
+    const normalizedCode = String(code).trim().toUpperCase();
     const coupon = await Coupon.create({
-      code: code.trim().toUpperCase(),
-      title: title.trim(),
+      _id: normalizedCode,
+      code: normalizedCode,
+      title: String(title).trim(),
       discountPercent: Number(discountPercent) || 10,
       maxDiscount: Number(maxDiscount) || 50000,
     });
 
     res.status(201).json(coupon);
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ error: "Mã giảm giá này đã tồn tại." });
+    }
     next(error);
   }
 };
-

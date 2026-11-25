@@ -4,8 +4,8 @@ import { useApp } from "../context";
 import { Arrow, Button, Field, Notice, PageHeading } from "../components";
 import { EditorHeader } from "./EditorHeader";
 import { api } from "../api";
+import { parseVipRows } from "../data";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminRooms = () => {
   const { rooms, setRooms, shows } = useApp();
   const [editing, setEditing] = useState(null);
@@ -156,11 +156,7 @@ export const AdminRooms = () => {
       )}
       <div className="room-grid">
         {rooms.map((room) => {
-          const vipList = Array.isArray(room.vipRows)
-            ? room.vipRows
-            : typeof room.vipRows === "string"
-            ? JSON.parse(room.vipRows || "[]")
-            : [];
+          const vipList = parseVipRows(room.vipRows);
           return (
             <article className="room-card" key={room.id}>
               <Armchair size={28} strokeWidth={1} />

@@ -6,7 +6,6 @@ import { Arrow, Button, Field, Notice, PageHeading } from "../components";
 import { EditorHeader } from "./EditorHeader";
 import { api } from "../api";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminMovies = () => {
   const { movies, setMovies, shows } = useApp();
   const [editing, setEditing] = useState(null);

@@ -1,7 +1,6 @@
 export const posterSrc = (poster = "interstellar.jpg") =>
   poster.startsWith("data:image/jpeg;") ? poster : `/assets/images/${poster}`;
 
-// Only the bundled posters have a separate small variant.
 export const posterSrcSet = (poster) =>
   poster.startsWith("data:")
     ? undefined
@@ -23,7 +22,6 @@ export const readJpegPoster = async (file) => {
     const image = new Image();
     image.src = url;
     await image.decode();
-    // Keep uploaded posters compact enough for the existing local movie storage.
     const scale = Math.min(1, 800 / image.naturalWidth, 1200 / image.naturalHeight);
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));

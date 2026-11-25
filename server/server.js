@@ -1,12 +1,9 @@
 import http from "http";
 import { Server } from "socket.io";
-import dotenv from "dotenv";
 import app from "./src/app.js";
-import { sequelize } from "./src/config/database.js";
+import { connectDB } from "./src/config/database.js";
+import { getJwtSecret } from "./src/config/env.js";
 import "./src/models/index.js";
-import { migrateMoviePoster } from "./src/config/migrateMoviePoster.js";
-
-dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
@@ -26,10 +23,9 @@ io.on("connection", (socket) => {
 
 const startServer = async () => {
   try {
-    await sequelize.authenticate();
-    await sequelize.sync();
-    await migrateMoviePoster(sequelize);
-    console.log("Database connected and synchronized successfully.");
+    getJwtSecret();
+    const conn = await connectDB();
+    console.log(`MongoDB connected successfully (database: ${conn.name}).`);
 
     server.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);
@@ -41,4 +37,3 @@ const startServer = async () => {
 };
 
 startServer();
-

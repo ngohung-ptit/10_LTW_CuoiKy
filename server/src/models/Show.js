@@ -1,51 +1,76 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import mongoose from "mongoose";
 import { buildShowBaseId, generateUniqueId } from "../utils/idGenerator.js";
+import { applyStringIdSchema } from "./schemaOptions.js";
 
-export const Show = sequelize.define(
-  "Show",
+const showSchema = new mongoose.Schema(
   {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
+    _id: {
+      type: String,
+      trim: true,
     },
     movieId: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      ref: "Movie",
+      required: true,
+      index: true,
     },
     roomId: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      ref: "Room",
+      required: true,
+      index: true,
     },
     date: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
+      index: true,
     },
     time: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     price: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 75000,
+      type: Number,
+      required: true,
+      default: 75000,
+      min: 1,
     },
     vipPrice: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 95000,
+      type: Number,
+      required: true,
+      default: 95000,
+      min: 1,
     },
   },
   {
-    tableName: "shows",
+    collection: "shows",
     timestamps: true,
+    _id: false,
   }
 );
 
-Show.beforeValidate(async (show) => {
-  if (!show.id && show.date && show.movieId && show.roomId) {
-    const baseId = buildShowBaseId(show);
-    show.id = await generateUniqueId(baseId, (id) => Show.findByPk(id));
-  }
+showSchema.virtual("movie", {
+  ref: "Movie",
+  localField: "movieId",
+  foreignField: "_id",
+  justOne: true,
 });
 
+showSchema.virtual("room", {
+  ref: "Room",
+  localField: "roomId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+showSchema.index({ roomId: 1, date: 1, time: 1 });
+
+applyStringIdSchema(showSchema, {
+  generateId: async (doc) => {
+    if (!doc.date || !doc.movieId || !doc.roomId) return undefined;
+    const baseId = buildShowBaseId(doc);
+    return generateUniqueId(baseId, (id) => Show.exists({ _id: id }));
+  },
+});
+
+export const Show = mongoose.models.Show || mongoose.model("Show", showSchema);

@@ -1,57 +1,48 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import mongoose from "mongoose";
 import { buildRoomBaseId, generateUniqueId } from "../utils/idGenerator.js";
+import { applyStringIdSchema } from "./schemaOptions.js";
 
-export const Room = sequelize.define(
-  "Room",
+const roomSchema = new mongoose.Schema(
   {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
+    _id: {
+      type: String,
+      trim: true,
     },
     name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
+      trim: true,
     },
     rows: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: Number,
+      required: true,
+      min: 1,
+      max: 12,
     },
     columns: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: Number,
+      required: true,
+      min: 4,
+      max: 16,
     },
     vipRows: {
-      type: DataTypes.JSON,
-      allowNull: false,
-      defaultValue: [],
-      get() {
-        const raw = this.getDataValue("vipRows");
-        if (Array.isArray(raw)) return raw;
-        if (typeof raw === "string") {
-          try {
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        }
-        return [];
-      },
-      set(val) {
-        this.setDataValue("vipRows", Array.isArray(val) ? val : []);
-      },
+      type: [String],
+      default: [],
     },
   },
   {
-    tableName: "rooms",
+    collection: "rooms",
     timestamps: true,
+    _id: false,
   }
 );
 
-Room.beforeValidate(async (room) => {
-  if (!room.id && room.name) {
-    const baseId = buildRoomBaseId(room.name);
-    room.id = await generateUniqueId(baseId, (id) => Room.findByPk(id));
-  }
+applyStringIdSchema(roomSchema, {
+  generateId: async (doc) => {
+    if (!doc.name) return undefined;
+    const baseId = buildRoomBaseId(doc.name);
+    return generateUniqueId(baseId, (id) => Room.exists({ _id: id }));
+  },
 });
+
+export const Room = mongoose.models.Room || mongoose.model("Room", roomSchema);

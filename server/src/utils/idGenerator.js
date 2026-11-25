@@ -7,6 +7,17 @@ export const slugify = (text) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
+export const escapeRegex = (text = "") =>
+  String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const buildMovieBaseId = (title) =>
+  (title || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/đ/g, "d")
+    .match(/[a-z0-9]+/)?.[0] || "";
+
 export const buildRoomBaseId = (name) => {
   const numMatch = (name || "").match(/\d+/);
   if (numMatch) {
@@ -33,10 +44,10 @@ export const buildUserBaseId = ({ email, name, role }) => {
   return `udu-${role || "user"}`;
 };
 
-export const generateUniqueId = async (baseId, findByPk) => {
+export const generateUniqueId = async (baseId, findById) => {
   let candidate = baseId;
   let counter = 2;
-  while (await findByPk(candidate)) {
+  while (await findById(candidate)) {
     candidate = `${baseId}-${counter}`;
     counter++;
   }

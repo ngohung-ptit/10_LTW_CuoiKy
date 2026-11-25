@@ -1,6 +1,7 @@
 :root {
   --p-bg: #f8f6f0;
   --p-surface: #eeece5;
+  --p-card: #fbfaf5;
   --p-ink: #25241f;
   --p-muted: #68665d;
   --p-accent: #b83228;
@@ -20,6 +21,49 @@
   --muted: var(--p-muted);
   --gut: 64px;
   --nav: 80px;
+  --seat-bg: #f8f6f0;
+  --seat-border: #c7c5bb;
+  --seat-vip-bg: #e8dfcd;
+  --seat-vip-border: #b3a182;
+  --seat-sold-bg: #d3d1c8;
+  --seat-sold-ink: #8b897f;
+  --notice-bg: #edf0e6;
+  --notice-border: #c9d0be;
+  --notice-error-bg: #f5e9e1;
+  --notice-error-border: #ddbaaa;
+  --notice-error-ink: #8e2e23;
+  --status-bg: #e4e8d9;
+  --status-ink: #465338;
+  --status-cancelled-bg: #e9e5db;
+  --status-cancelled-ink: #736d62;
+  --showtime-hover: #f3e9df;
+}
+:root[data-theme="dark"] {
+  --p-bg: #141311;
+  --p-surface: #1e1c18;
+  --p-card: #1a1916;
+  --p-ink: #f2efe7;
+  --p-muted: #a6a194;
+  --p-accent: #d94a3f;
+  --p-action: #d94a3f;
+  --line: #2f2c26;
+  --line-strong: #4a453b;
+  --seat-bg: #23211c;
+  --seat-border: #4a463c;
+  --seat-vip-bg: #3b3022;
+  --seat-vip-border: #8c6f42;
+  --seat-sold-bg: #2c2a24;
+  --seat-sold-ink: #6b675c;
+  --notice-bg: #1e281d;
+  --notice-border: #3a4d37;
+  --notice-error-bg: #311d1a;
+  --notice-error-border: #6e3730;
+  --notice-error-ink: #f2b4ab;
+  --status-bg: #25301f;
+  --status-ink: #b9cfa9;
+  --status-cancelled-bg: #292722;
+  --status-cancelled-ink: #a6a194;
+  --showtime-hover: #2a211d;
 }
 .wrap {
   width: min(1280px, calc(100% - 2 * var(--gut)));
@@ -568,7 +612,7 @@
 }
 .showtime:hover {
   border-color: var(--action);
-  background: #f3e9df;
+  background: var(--showtime-hover);
 }
 .showtime strong {
   font-size: 17px;
@@ -780,16 +824,16 @@
 }
 .notice {
   padding: 16px 20px;
-  border: 1px solid #c9d0be;
-  background: #edf0e6;
+  border: 1px solid var(--notice-border);
+  background: var(--notice-bg);
   font-size: 14px;
   line-height: 1.7;
   margin-bottom: 24px;
 }
 .notice-error {
-  background: #f5e9e1;
-  border-color: #ddbaaa;
-  color: #8e2e23;
+  background: var(--notice-error-bg);
+  border-color: var(--notice-error-border);
+  color: var(--notice-error-ink);
 }
 .booking-title {
   display: flex;
@@ -910,10 +954,10 @@
 }
 .seat {
   height: 34px;
-  border: 1px solid #c7c5bb;
-  border-bottom: 3px solid #b8b6aa;
+  border: 1px solid var(--seat-border);
+  border-bottom: 3px solid var(--line-strong);
   border-radius: 5px 5px 2px 2px;
-  background: #f8f6f0;
+  background: var(--seat-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -924,8 +968,8 @@
     border-color 0.15s;
 }
 .seat.vip {
-  background: #e8dfcd;
-  border-color: #b3a182;
+  background: var(--seat-vip-bg);
+  border-color: var(--seat-vip-border);
 }
 .seat.chosen {
   background: var(--action);
@@ -933,9 +977,9 @@
   color: white;
 }
 .seat.sold {
-  background: #d3d1c8;
-  border-color: #d3d1c8;
-  color: #8b897f;
+  background: var(--seat-sold-bg);
+  border-color: var(--seat-sold-bg);
+  color: var(--seat-sold-ink);
 }
 .seat:not(:disabled):hover {
   border-color: var(--action);
@@ -1107,7 +1151,7 @@
   display: grid;
   grid-template-columns: 120px 1fr 160px;
   border: 1px solid var(--line);
-  background: #fbfaf5;
+  background: var(--p-card);
 }
 .ticket-card > img {
   width: 120px;
@@ -1129,14 +1173,14 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  background: #e4e8d9;
+  background: var(--status-bg);
   padding: 5px 8px;
   border-radius: 2px;
-  color: #465338;
+  color: var(--status-ink);
 }
 .status-label.cancelled {
-  color: #736d62;
-  background: #e9e5db;
+  color: var(--status-cancelled-ink);
+  background: var(--status-cancelled-bg);
 }
 .ticket-id {
   font-size: 13px;
@@ -1362,7 +1406,7 @@ td strong {
 }
 .admin-editor {
   padding: 32px;
-  background: #eeece5;
+  background: var(--p-surface);
   border: 1px solid var(--line);
   margin-bottom: 32px;
 }
@@ -1450,4 +1494,130 @@ td strong {
   background: transparent;
   color: inherit;
   cursor: pointer;
+}
+.filter-row select option {
+  background: var(--bg);
+  color: var(--ink);
+}
+.coupon-box {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.coupon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.coupon-row {
+  display: flex;
+  gap: 8px;
+}
+.coupon-row input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.coupon-btn {
+  min-height: 36px;
+  height: 36px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+.coupon-applied {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.qr-btn-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.qr-thumb-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.qr-thumb-img {
+  background: #ffffff;
+  padding: 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+}
+.qr-thumb-hint {
+  font-size: 11px;
+  color: var(--action);
+}
+.qr-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+.qr-modal {
+  background: var(--p-card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+.qr-modal h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.qr-modal-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.qr-modal-box {
+  display: inline-block;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.qr-modal-meta {
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.qr-modal-meta strong {
+  font-size: 15px;
+}
+.qr-modal-meta small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.qr-modal-close {
+  margin-top: 20px;
+  width: 100%;
 }

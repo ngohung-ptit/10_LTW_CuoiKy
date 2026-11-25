@@ -1,32 +1,51 @@
+import crypto from "crypto";
 import QRCode from "qrcode";
-import { sequelize } from "../config/database.js";
-import { Ticket, TicketSeat, Show, Movie, Room, Coupon } from "../models/index.js";
+import { Ticket, Show, Coupon } from "../models/index.js";
+import { buildPaginatedResponse, parsePagination, parseShowDateTime } from "../utils/queryHelpers.js";
 
-const parseShowDateTime = (date, time) => {
-  return new Date(`${date}T${time}:00+07:00`);
+const isValidSeatForRoom = (seatId, room) => {
+  const match = /^([A-L])(\d+)$/.exec(String(seatId || ""));
+  if (!match) return false;
+  const rowIndex = match[1].charCodeAt(0) - 65;
+  const colNum = parseInt(match[2], 10);
+  return rowIndex >= 0 && rowIndex < room.rows && colNum >= 1 && colNum <= room.columns;
+};
+
+const findConflictingSeats = async (showId, seats) => {
+  const existing = await Ticket.find({
+    showId,
+    status: "confirmed",
+    "seats.seatId": { $in: seats },
+  }).select("seats");
+
+  const occupied = new Set();
+  for (const ticket of existing) {
+    for (const item of ticket.seats || []) {
+      occupied.add(item.seatId);
+    }
+  }
+  return seats.filter((seatId) => occupied.has(seatId));
 };
 
 export const createTicket = async (req, res, next) => {
   try {
-    const { showId, seats } = req.body;
+    const { showId, seats, couponCode } = req.body;
     const userId = req.user.id;
 
     if (!showId || !Array.isArray(seats) || seats.length === 0) {
       return res.status(400).json({ error: "Vui lòng chọn ít nhất một ghế." });
     }
 
-    if (seats.length > 8) {
+    const uniqueSeats = [...new Set(seats.map((s) => String(s).trim().toUpperCase()))];
+    if (uniqueSeats.length !== seats.length) {
+      return res.status(400).json({ error: "Danh sách ghế chọn không được trùng lặp." });
+    }
+    if (uniqueSeats.length > 8) {
       return res.status(400).json({ error: "Chỉ được đặt tối đa 8 ghế cho mỗi lần đặt." });
     }
 
-    const show = await Show.findByPk(showId, {
-      include: [
-        { model: Movie, as: "movie" },
-        { model: Room, as: "room" },
-      ],
-    });
-
-    if (!show) {
+    const show = await Show.findById(showId).populate("movie").populate("room");
+    if (!show || !show.room) {
       return res.status(404).json({ error: "Không tìm thấy suất chiếu." });
     }
 
@@ -36,96 +55,90 @@ export const createTicket = async (req, res, next) => {
     }
 
     const room = show.room;
-    const vipRows = Array.isArray(room.vipRows) ? room.vipRows : [];
+    const invalidSeat = uniqueSeats.find((seatId) => !isValidSeatForRoom(seatId, room));
+    if (invalidSeat) {
+      return res.status(400).json({ error: `Ghế ${invalidSeat} không hợp lệ trong ${room.name}.` });
+    }
 
-    const result = await sequelize.transaction(async (t) => {
-      const activeSeats = await TicketSeat.findAll({
-        where: { showId },
-        include: [
-          {
-            model: Ticket,
-            as: "ticket",
-            where: { status: "confirmed" },
-            attributes: ["id", "status"],
-          },
-        ],
-        transaction: t,
-        lock: true,
+    const conflicts = await findConflictingSeats(showId, uniqueSeats);
+    if (conflicts.length > 0) {
+      return res.status(409).json({
+        error: "Một số ghế bạn chọn vừa có người khác đặt.",
+        conflicts,
       });
+    }
 
-      const occupiedSeatIds = activeSeats.map((s) => s.seatId);
-      const conflicts = seats.filter((seatId) => occupiedSeatIds.includes(seatId));
+    const vipRows = Array.isArray(room.vipRows) ? room.vipRows : [];
+    let rawTotal = 0;
+    const seatRecords = uniqueSeats.map((seatId) => {
+      const seatPrice = vipRows.includes(seatId[0]) ? show.vipPrice : show.price;
+      rawTotal += seatPrice;
+      return { seatId, price: seatPrice };
+    });
 
-      if (conflicts.length > 0) {
-        const error = new Error("Một số ghế bạn chọn vừa có người khác đặt.");
-        error.status = 409;
-        error.details = { conflicts };
-        throw error;
+    let discount = 0;
+    let appliedCouponCode = null;
+    if (couponCode && String(couponCode).trim()) {
+      const normalizedCode = String(couponCode).trim().toUpperCase();
+      const coupon = await Coupon.findOne({ _id: normalizedCode, isActive: true });
+      if (!coupon) {
+        return res.status(400).json({ error: "Mã giảm giá không hợp lệ hoặc đã hết hạn." });
       }
+      discount = Math.min(
+        Math.round((rawTotal * coupon.discountPercent) / 100),
+        coupon.maxDiscount
+      );
+      appliedCouponCode = coupon.code;
+    }
 
-      let total = 0;
-      const seatRecords = [];
-      const ticketId = `UDU-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const total = Math.max(0, rawTotal - discount);
+    const ticketId = `UDU-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
-      for (const seatId of seats) {
-        const rowLetter = seatId[0];
-        const isVip = vipRows.includes(rowLetter);
-        const seatPrice = isVip ? show.vipPrice : show.price;
-        total += seatPrice;
+    let qrCode = null;
+    try {
+      qrCode = await QRCode.toDataURL(ticketId);
+    } catch {
+      qrCode = null;
+    }
 
-        seatRecords.push({
-          ticketId,
-          showId,
-          seatId,
-          price: seatPrice,
+    let ticket;
+    try {
+      ticket = await Ticket.create({
+        _id: ticketId,
+        userId,
+        showId,
+        movieId: show.movieId,
+        roomName: room.name,
+        seats: seatRecords,
+        total,
+        discount,
+        couponCode: appliedCouponCode,
+        status: "confirmed",
+        qrCode,
+      });
+    } catch (error) {
+      if (error.code === 11000) {
+        const raceConflicts = await findConflictingSeats(showId, uniqueSeats);
+        return res.status(409).json({
+          error: "Một số ghế bạn chọn vừa có người khác đặt.",
+          conflicts: raceConflicts.length ? raceConflicts : uniqueSeats,
         });
       }
-
-      let qrCode = null;
-      try {
-        qrCode = await QRCode.toDataURL(ticketId);
-      } catch {
-        qrCode = null;
-      }
-
-      const ticket = await Ticket.create(
-        {
-          id: ticketId,
-          userId,
-          showId,
-          movieId: show.movieId,
-          roomName: room.name,
-          total,
-          status: "confirmed",
-          qrCode,
-        },
-        { transaction: t }
-      );
-
-      await TicketSeat.bulkCreate(seatRecords, { transaction: t });
-
-      return {
-        ticket: {
-          ...ticket.toJSON(),
-          seats,
-          show: show.toJSON(),
-        },
-      };
-    });
+      throw error;
+    }
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("seatsBooked", { showId, seats });
+      io.emit("seatsBooked", { showId, seats: uniqueSeats });
     }
 
-    res.status(201).json(result);
+    res.status(201).json({
+      ticket: {
+        ...ticket.toJSON(),
+        show: show.toJSON(),
+      },
+    });
   } catch (error) {
-    if (error.status === 409) {
-      return res.status(409).json({
-        error: error.message,
-        conflicts: error.details?.conflicts || [],
-      });
-    }
     next(error);
   }
 };
@@ -135,36 +148,34 @@ export const getMyTickets = async (req, res, next) => {
     const userId = req.user.id;
     const { status } = req.query;
 
-    const where = { userId };
+    const filter = { userId };
     if (status && status !== "all") {
-      where.status = status;
+      filter.status = status;
     }
 
-    const tickets = await Ticket.findAll({
-      where,
-      include: [
-        { model: TicketSeat, as: "seats", attributes: ["seatId", "price"] },
-        {
-          model: Show,
-          as: "show",
-          include: [
-            { model: Movie, as: "movie" },
-            { model: Room, as: "room" },
-          ],
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
+    const pagination = parsePagination(req.query);
+    const query = Ticket.find(filter)
+      .populate({
+        path: "show",
+        populate: [{ path: "movie" }, { path: "room" }],
+      })
+      .sort({ createdAt: -1 });
 
-    const formatted = tickets.map((t) => {
-      const plain = t.toJSON();
-      return {
-        ...plain,
-        seats: plain.seats ? plain.seats.map((s) => s.seatId) : [],
-      };
-    });
+    if (pagination) {
+      query.skip(pagination.skip).limit(pagination.limit);
+    }
 
-    res.status(200).json(formatted);
+    const [tickets, total] = await Promise.all([
+      query.exec(),
+      pagination ? Ticket.countDocuments(filter) : Promise.resolve(0),
+    ]);
+
+    if (pagination) {
+      res.set("X-Total-Count", String(total));
+      return res.status(200).json(buildPaginatedResponse(tickets, total, pagination));
+    }
+
+    res.status(200).json(tickets);
   } catch (error) {
     next(error);
   }
@@ -175,13 +186,7 @@ export const cancelTicket = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const ticket = await Ticket.findByPk(id, {
-      include: [
-        { model: Show, as: "show" },
-        { model: TicketSeat, as: "seats" },
-      ],
-    });
-
+    const ticket = await Ticket.findById(id).populate("show");
     if (!ticket) {
       return res.status(404).json({ error: "Không tìm thấy vé." });
     }
@@ -192,6 +197,10 @@ export const cancelTicket = async (req, res, next) => {
 
     if (ticket.status === "cancelled") {
       return res.status(400).json({ error: "Vé này đã được hủy trước đó." });
+    }
+
+    if (!ticket.show) {
+      return res.status(400).json({ error: "Không tìm thấy suất chiếu của vé này." });
     }
 
     const showDateTime = parseShowDateTime(ticket.show.date, ticket.show.time);
@@ -207,8 +216,8 @@ export const cancelTicket = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      const seats = ticket.seats.map((s) => s.seatId);
-      io.emit("seatsReleased", { showId: ticket.showId, seats });
+      const releasedSeats = (ticket.seats || []).map((s) => s.seatId);
+      io.emit("seatsReleased", { showId: ticket.showId, seats: releasedSeats });
     }
 
     res.status(200).json({
@@ -219,4 +228,3 @@ export const cancelTicket = async (req, res, next) => {
     next(error);
   }
 };
-

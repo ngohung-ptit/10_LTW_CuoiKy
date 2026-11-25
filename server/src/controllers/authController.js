@@ -1,36 +1,42 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/index.js";
+import { getJwtSecret } from "../config/env.js";
 import { buildUserBaseId, generateUniqueId } from "../utils/idGenerator.js";
 
-const generateToken = (user) => {
-  return jwt.sign(
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const generateToken = (user) =>
+  jwt.sign(
     { id: user.id, email: user.email, role: user.role },
-    process.env.JWT_SECRET || "default_jwt_secret",
+    getJwtSecret(),
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
-};
 
 export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "Vui lòng điền đầy đủ họ tên, email và mật khẩu." });
+    const trimmedName = typeof name === "string" ? name.trim() : "";
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+
+    if (trimmedName.length < 2 || !EMAIL_PATTERN.test(normalizedEmail) || typeof password !== "string" || password.length < 8) {
+      return res.status(400).json({
+        error: "Vui lòng nhập họ tên (>= 2 ký tự), email hợp lệ và mật khẩu ít nhất 8 ký tự.",
+      });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const existing = await User.findOne({ where: { email: normalizedEmail } });
+    const existing = await User.exists({ email: normalizedEmail });
     if (existing) {
       return res.status(400).json({ error: "Email này đã được đăng ký." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const explicitId = req.body.id?.trim();
-    const baseId = explicitId || buildUserBaseId({ email: normalizedEmail, name, role: "member" });
-    const userId = explicitId ? explicitId : await generateUniqueId(baseId, (id) => User.findByPk(id));
+    const baseId = buildUserBaseId({ email: normalizedEmail, name: trimmedName, role: "member" });
+    const userId = await generateUniqueId(baseId, (id) => User.exists({ _id: id }));
+
     const user = await User.create({
-      id: userId,
-      name: name.trim(),
+      _id: userId,
+      name: trimmedName,
       email: normalizedEmail,
       password: hashedPassword,
       role: "member",
@@ -58,13 +64,13 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ error: "Vui lòng nhập email và mật khẩu." });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ where: { email: normalizedEmail } });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(401).json({ error: "Email hoặc mật khẩu không chính xác." });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(String(password), user.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Email hoặc mật khẩu không chính xác." });
     }
@@ -86,9 +92,7 @@ export const login = async (req, res, next) => {
 
 export const getMe = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ["id", "name", "email", "role", "createdAt"],
-    });
+    const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(404).json({ error: "Không tìm thấy thông tin tài khoản." });
     }
@@ -97,4 +101,3 @@ export const getMe = async (req, res, next) => {
     next(error);
   }
 };
-

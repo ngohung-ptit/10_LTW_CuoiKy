@@ -1,7 +1,7 @@
 import { posterSrc, posterSrcSet } from "./posters";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, Navigate } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, Menu, X, Ticket, MapPin, Clock3, Search, ChevronRight, LogOut } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Menu, X, Ticket, MapPin, Clock3, Search, ChevronRight, LogOut, Sun, Moon } from "lucide-react";
 import { useApp } from "./context";
 import { dateLabel, days, showDate } from "./data";
 
@@ -33,7 +33,7 @@ export const Button = ({
   );
 };
 export const Header = () => {
-  const { user, logout } = useApp();
+  const { user, logout, theme, toggleTheme } = useApp();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   useEffect(() => {
@@ -75,6 +75,15 @@ export const Header = () => {
           {user ? <button className="mobile-account text-button" onClick={() => { logout(); setOpen(false); }}>Đăng xuất</button> : <NavLink className="mobile-account" to="/dang-nhap">Đăng nhập</NavLink>}
         </nav>
         <div className="nav-actions">
+          <button
+            type="button"
+            className="icon-button theme-toggle"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+            title={theme === "dark" ? "Giao diện sáng" : "Giao diện tối"}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           {user ? (
             <>
               <Link className="user-name" to="/ve-cua-toi">

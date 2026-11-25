@@ -1,7 +1,6 @@
 import { posterSrc } from "../posters";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
 import { Ticket, Check, QrCode } from "lucide-react";
 import { useApp } from "../context";
 import { dateLabel, money, showDate } from "../data";
@@ -12,11 +11,31 @@ export const TicketsPage = () => {
   const [filter, setFilter] = useState("all");
   const [confirmId, setConfirmId] = useState(null);
   const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [viewingQr, setViewingQr] = useState(null);
   const location = useLocation();
   const mine = tickets.filter(
-    (t) => t.userId === user.id && (filter === "all" || t.status === filter),
+    (t) => t.userId === user.id && (filter === "all" || t.status === filter)
   );
+
+  const handleConfirmCancel = async (ticketId) => {
+    setErrorMessage("");
+    try {
+      const outcome = cancelTicket(ticketId);
+      const success =
+        outcome && typeof outcome.then === "function" ? await outcome : outcome;
+      setMessage(
+        success
+          ? "Vé đã được hủy. Ghế đã được trả lại."
+          : "Không thể hủy vé trong vòng 2 giờ trước suất chiếu."
+      );
+    } catch (err) {
+      setErrorMessage(err.message || "Không thể hủy vé. Vui lòng thử lại.");
+    } finally {
+      setConfirmId(null);
+    }
+  };
+
   return (
     <div className="wrap page-shell">
       <Breadcrumb current="Vé của tôi" />
@@ -29,6 +48,7 @@ export const TicketsPage = () => {
         </Notice>
       )}
       <Notice>{message}</Notice>
+      <Notice error>{errorMessage}</Notice>
       <div className="film-tabs">
         <button
           className={filter === "all" ? "active" : ""}
@@ -54,6 +74,7 @@ export const TicketsPage = () => {
           const movie = movies.find((m) => m.id === ticket.movieId);
           const canCancel =
             ticket.status === "confirmed" &&
+            ticket.show &&
             showDate(ticket.show) - Date.now() >= 7200000;
           return (
             <article className="ticket-card" key={ticket.id}>
@@ -72,13 +93,16 @@ export const TicketsPage = () => {
                   <span className="ticket-id">{ticket.id}</span>
                 </div>
                 <h2>{movie?.title || "Phim đã ngừng chiếu"}</h2>
+                {ticket.show && (
+                  <p>
+                    {dateLabel(ticket.show.date)} · {ticket.show.time} ·{" "}
+                    {ticket.roomName}
+                  </p>
+                )}
                 <p>
-                  {dateLabel(ticket.show.date)} · {ticket.show.time} ·{" "}
-                  {ticket.roomName}
-                </p>
-                <p>
-                  Ghế <strong>{ticket.seats.join(", ")}</strong> ·{" "}
+                  Ghế <strong>{(ticket.seats || []).join(", ")}</strong> ·{" "}
                   {money(ticket.total)}
+                  {ticket.couponCode ? ` (Mã ${ticket.couponCode})` : ""}
                 </p>
                 {canCancel &&
                   (confirmId === ticket.id ? (
@@ -86,15 +110,7 @@ export const TicketsPage = () => {
                       <span>Hủy vé và trả lại ghế?</span>
                       <button
                         className="text-button"
-                        onClick={() => {
-                          const success = cancelTicket(ticket.id);
-                          setMessage(
-                            success
-                              ? "Vé đã được hủy. Ghế đã được trả lại."
-                              : "Không thể hủy vé trong vòng 2 giờ trước suất chiếu.",
-                          );
-                          setConfirmId(null);
-                        }}
+                        onClick={() => handleConfirmCancel(ticket.id)}
                       >
                         Xác nhận hủy
                       </button>
@@ -122,15 +138,8 @@ export const TicketsPage = () => {
                   <div>
                     <button
                       type="button"
-                      className="text-button"
+                      className="text-button qr-btn-inline"
                       onClick={() => setViewingQr({ ...ticket, movie })}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        marginTop: "10px",
-                        fontSize: "13px",
-                      }}
                     >
                       <QrCode size={14} /> Xem mã QR vào rạp
                     </button>
@@ -143,16 +152,7 @@ export const TicketsPage = () => {
                     type="button"
                     onClick={() => setViewingQr({ ...ticket, movie })}
                     title="Bấm để phóng to mã QR"
-                    style={{
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
+                    className="qr-thumb-btn"
                   >
                     <img
                       src={
@@ -162,16 +162,9 @@ export const TicketsPage = () => {
                       alt={`Mã QR ${ticket.id}`}
                       width="90"
                       height="90"
-                      style={{
-                        background: "#fff",
-                        padding: "4px",
-                        border: "1px solid #d3cbbb",
-                        borderRadius: "4px",
-                      }}
+                      className="qr-thumb-img"
                     />
-                    <span style={{ fontSize: "11px", color: "var(--action)" }}>
-                      Phóng to QR
-                    </span>
+                    <span className="qr-thumb-hint">Phóng to QR</span>
                   </button>
                 ) : (
                   <>
@@ -179,7 +172,10 @@ export const TicketsPage = () => {
                     <span className="muted">Vé đã hủy</span>
                   </>
                 )}
-                <span>{ticket.seats.length} ghế · {ticket.show.time}</span>
+                <span>
+                  {(ticket.seats || []).length} ghế
+                  {ticket.show ? ` · ${ticket.show.time}` : ""}
+                </span>
               </div>
             </article>
           );
@@ -202,45 +198,15 @@ export const TicketsPage = () => {
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.65)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-            padding: "16px",
-          }}
+          className="qr-modal-backdrop"
           onClick={() => setViewingQr(null)}
         >
-          <div
-            style={{
-              background: "#fff",
-              padding: "24px",
-              borderRadius: "8px",
-              maxWidth: "360px",
-              width: "100%",
-              textAlign: "center",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "4px" }}>
-              Vé điện tử UDU cinematic
-            </h3>
-            <p style={{ fontSize: "13px", color: "var(--muted)", marginBottom: "16px" }}>
+          <div className="qr-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Vé điện tử UDU cinematic</h3>
+            <p className="qr-modal-subtitle">
               Đưa mã QR này cho nhân viên soát vé tại rạp
             </p>
-            <div
-              style={{
-                display: "inline-block",
-                padding: "12px",
-                background: "#fbfaf5",
-                border: "1px solid var(--line)",
-                borderRadius: "6px",
-              }}
-            >
+            <div className="qr-modal-box">
               <img
                 src={
                   viewingQr.qrCode ||
@@ -249,26 +215,23 @@ export const TicketsPage = () => {
                 alt={`Mã QR ${viewingQr.id}`}
                 width="180"
                 height="180"
-                style={{ display: "block" }}
               />
             </div>
-            <div style={{ marginTop: "16px", fontSize: "14px", lineHeight: "1.6" }}>
-              <div style={{ fontSize: "16px", fontWeight: 600, color: "var(--ink)" }}>
-                {viewingQr.movie?.title || "Phim chiếu rạp"}
-              </div>
-              <div style={{ color: "var(--muted)", fontSize: "13px", marginTop: "2px" }}>
-                {viewingQr.roomName} · {dateLabel(viewingQr.show.date)} · {viewingQr.show.time}
-              </div>
-              <div style={{ marginTop: "6px" }}>
-                Ghế: <strong>{viewingQr.seats.join(", ")}</strong>
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--muted)", marginTop: "4px" }}>
-                Mã vé: <strong>{viewingQr.id}</strong>
-              </div>
+            <div className="qr-modal-meta">
+              <strong>{viewingQr.movie?.title || "Phim chiếu rạp"}</strong>
+              {viewingQr.show && (
+                <p>
+                  {viewingQr.roomName} · {dateLabel(viewingQr.show.date)} ·{" "}
+                  {viewingQr.show.time}
+                </p>
+              )}
+              <p>
+                Ghế: <strong>{(viewingQr.seats || []).join(", ")}</strong>
+              </p>
+              <small>Mã vé: {viewingQr.id}</small>
             </div>
             <button
-              className="btn btn--primary"
-              style={{ marginTop: "20px", width: "100%" }}
+              className="btn btn--primary qr-modal-close"
               onClick={() => setViewingQr(null)}
             >
               Đóng

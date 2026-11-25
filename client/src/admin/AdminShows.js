@@ -6,7 +6,6 @@ import { Arrow, Button, EmptyState, Field, Notice, PageHeading } from "../compon
 import { EditorHeader } from "./EditorHeader";
 import { api } from "../api";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AdminShows = () => {
   const { shows, setShows, movies, rooms, tickets } = useApp();
   const [date, setDate] = useState(days[0]);

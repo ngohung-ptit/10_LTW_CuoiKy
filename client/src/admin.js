@@ -27,5 +27,3 @@ export const AdminLayout = () => (
     <Outlet />
   </div>
 );
-
-// Các trang còn lại nằm trong từng file riêng để dễ tìm.

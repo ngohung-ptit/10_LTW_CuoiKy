@@ -1,80 +1,97 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import mongoose from "mongoose";
+import { buildMovieBaseId } from "../utils/idGenerator.js";
+import { applyStringIdSchema } from "./schemaOptions.js";
 
-export const Movie = sequelize.define(
-  "Movie",
+const movieSchema = new mongoose.Schema(
   {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
+    _id: {
+      type: String,
+      trim: true,
     },
     title: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
+      trim: true,
     },
     subtitle: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: String,
+      default: "",
+      trim: true,
     },
     genre: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
     },
     duration: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: Number,
+      required: true,
+      min: 1,
+      max: 360,
     },
     year: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: Number,
+      required: true,
+      default: () => new Date().getFullYear(),
     },
     age: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: "P",
+      type: String,
+      enum: ["P", "T13", "T16", "T18"],
+      default: "P",
     },
     director: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: String,
+      default: "",
+      trim: true,
     },
     cast: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: String,
+      default: "",
+      trim: true,
     },
     poster: {
-      type: DataTypes.TEXT("medium"),
-      allowNull: false,
+      type: String,
+      required: true,
+      default: "interstellar.jpg",
     },
     trailer: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: String,
+      default: "",
+      trim: true,
     },
     status: {
-      type: DataTypes.ENUM("showing", "upcoming"),
-      defaultValue: "showing",
+      type: String,
+      enum: ["showing", "upcoming"],
+      default: "showing",
+      index: true,
     },
     description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
+      type: String,
+      default: "",
+      trim: true,
     },
   },
   {
-    tableName: "movies",
+    collection: "movies",
     timestamps: true,
+    _id: false,
   }
 );
 
-Movie.beforeValidate((movie) => {
-  if (!movie.id && movie.title) {
-    const firstWord = movie.title
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/đ/g, "d")
-      .match(/[a-z0-9]+/)?.[0];
-    if (firstWord) {
-      movie.id = firstWord;
-    }
-  }
+movieSchema.virtual("shows", {
+  ref: "Show",
+  localField: "_id",
+  foreignField: "movieId",
 });
 
+movieSchema.index({ status: 1, createdAt: -1 });
+
+applyStringIdSchema(movieSchema, {
+  generateId: (doc) => {
+    if (!doc.title) return undefined;
+    return buildMovieBaseId(doc.title) || undefined;
+  },
+});
+
+export const Movie = mongoose.models.Movie || mongoose.model("Movie", movieSchema);

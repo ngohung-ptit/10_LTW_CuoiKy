@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { getJwtSecret } from "../config/env.js";
 
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -8,10 +9,7 @@ export const verifyToken = (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "default_jwt_secret"
-    );
+    const decoded = jwt.verify(token, getJwtSecret());
     req.user = decoded;
     next();
   } catch {
@@ -25,4 +23,3 @@ export const requireAdmin = (req, res, next) => {
   }
   next();
 };
-

@@ -1,35 +1,64 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import mongoose from "mongoose";
+import { applyStringIdSchema } from "./schemaOptions.js";
 
-export const Coupon = sequelize.define(
-  "Coupon",
+const couponSchema = new mongoose.Schema(
   {
+    _id: {
+      type: String,
+      uppercase: true,
+      trim: true,
+    },
     code: {
-      type: DataTypes.STRING,
-      primaryKey: true,
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
     },
     title: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
+      trim: true,
     },
     discountPercent: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 10,
+      type: Number,
+      required: true,
+      default: 10,
+      min: 1,
+      max: 100,
     },
     maxDiscount: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 50000,
+      type: Number,
+      required: true,
+      default: 50000,
+      min: 0,
     },
     isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
+      type: Boolean,
+      default: true,
     },
   },
   {
-    tableName: "coupons",
+    collection: "coupons",
     timestamps: true,
+    _id: false,
   }
 );
 
+couponSchema.pre("validate", function () {
+  if (!this._id && this.code) {
+    this._id = String(this.code).trim().toUpperCase();
+  }
+  if (!this.code && this._id) {
+    this.code = String(this._id).trim().toUpperCase();
+  }
+});
+
+applyStringIdSchema(couponSchema, {
+  transform: (ret) => {
+    ret.code = ret.code || ret.id;
+    return ret;
+  },
+});
+
+export const Coupon = mongoose.models.Coupon || mongoose.model("Coupon", couponSchema);

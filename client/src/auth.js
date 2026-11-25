@@ -2,6 +2,7 @@ import { api } from "./api";
 
 const ACCOUNTS_KEY = "udu-accounts";
 const SESSION_KEY = "udu-session";
+const isTestEnv = () => process.env.NODE_ENV === "test";
 
 const demoAccounts = [
   {
@@ -70,6 +71,9 @@ export const registerAccount = async ({ name, email, password }) => {
     if (err.status) {
       throw new Error(err.message);
     }
+    if (!isTestEnv()) {
+      throw new Error("Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại sau.");
+    }
 
     const normalizedEmail = email.trim().toLowerCase();
     const salt = crypto.randomUUID();
@@ -115,6 +119,9 @@ export const loginAccount = async ({ email, password }) => {
     if (err.status) {
       throw new Error(err.message);
     }
+    if (!isTestEnv()) {
+      throw new Error("Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại sau.");
+    }
 
     const account = readAccounts().find(
       (item) => item.email === email.trim().toLowerCase()
@@ -128,9 +135,13 @@ export const loginAccount = async ({ email, password }) => {
 
 export const getCurrentUser = () => {
   if (sessionStorage.getItem("udu-token")) {
-    try { return JSON.parse(sessionStorage.getItem("udu-api-user")) || null; }
-    catch { return null; }
+    try {
+      return JSON.parse(sessionStorage.getItem("udu-api-user")) || null;
+    } catch {
+      return null;
+    }
   }
+  if (!isTestEnv()) return null;
   const id = sessionStorage.getItem(SESSION_KEY);
   if (!id) return null;
   const account = readAccounts().find((item) => item.id === id);

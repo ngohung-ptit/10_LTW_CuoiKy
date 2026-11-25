@@ -4,7 +4,6 @@ import { Ticket } from "lucide-react";
 import { useApp } from "../context";
 import { Arrow, Button, Field, Notice } from "../components";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const AuthPage = () => {
   const [register, setRegister] = useState(false);
   const [name, setName] = useState("");
@@ -30,7 +29,6 @@ export const AuthPage = () => {
       const user = await authenticate(register ? "register" : "login", { name, email, password });
       let destination = location.state?.from || "/ve-cua-toi";
       if (user.role === "admin") destination = "/quan-tri";
-      // Thành viên không bị đưa trở lại trang admin sau khi đăng ký.
       if (user.role !== "admin" && destination.startsWith("/quan-tri")) destination = "/ve-cua-toi";
       navigate(destination, { replace: true });
     } catch (error) {

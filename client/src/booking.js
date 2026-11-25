@@ -1,22 +1,25 @@
 import { posterSrc } from "./posters";
-import { Link } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
-import { Check, Info } from "lucide-react";
+import { io } from "socket.io-client";
+import { Check, Info, Tag } from "lucide-react";
 import { useApp, useOccupied } from "./context";
 import { useCountdown } from "./hooks";
-import { money, dateLabel, showDate } from "./data";
+import { money, dateLabel, showDate, parseVipRows, initialCoupons } from "./data";
+import { api, getToken, SOCKET_BASE } from "./api";
 import { clearBooking, removeSeats, startBooking, toggleSeat } from "./store";
 import { Arrow, Breadcrumb, Button, Notice, Steps, Timer } from "./components";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
+const OFFLINE_COUPONS = Object.fromEntries(
+  initialCoupons
+    .filter((coupon) => coupon.isActive !== false)
+    .map((coupon) => [coupon.code, coupon]),
+);
+
 export const SeatMap = ({ room, occupied, selected, onSelect }) => {
-  const vipRows = Array.isArray(room?.vipRows)
-    ? room.vipRows
-    : typeof room?.vipRows === "string"
-    ? JSON.parse(room.vipRows || "[]")
-    : [];
+  const vipRows = useMemo(() => parseVipRows(room?.vipRows), [room?.vipRows]);
   return (
     <div className="seat-map" style={{ "--seat-columns": room.columns }}>
       <div className="screen">
@@ -87,95 +90,232 @@ export const BookingSummary = ({
   show,
   room,
   selected,
+  rawTotal,
+  discount,
   total,
+  appliedCoupon,
+  onApplyCoupon,
+  onClearCoupon,
   review,
+  submitting,
   onContinue,
   onBack,
-}) => (
-  <aside className="booking-summary">
-    <div className="summary-movie">
-      <img
-        src={posterSrc(movie.poster)}
-        alt={`Áp phích ${movie.title}`}
-        width="80"
-        height="120"
-      />
-      <div>
-        <span className="age-inline">{movie.age}</span>
-        <h2>{movie.title}</h2>
-        <p>2D · Phụ đề tiếng Việt</p>
+}) => {
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+
+  const handleApply = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) {
+      setCouponError("Vui lòng nhập mã giảm giá.");
+      return;
+    }
+    setCheckingCoupon(true);
+    setCouponError("");
+    try {
+      await onApplyCoupon(code);
+      setCouponInput("");
+    } catch (err) {
+      setCouponError(err.message || "Mã giảm giá không hợp lệ.");
+    } finally {
+      setCheckingCoupon(false);
+    }
+  };
+
+  return (
+    <aside className="booking-summary">
+      <div className="summary-movie">
+        <img
+          src={posterSrc(movie.poster)}
+          alt={`Áp phích ${movie.title}`}
+          width="80"
+          height="120"
+        />
+        <div>
+          <span className="age-inline">{movie.age}</span>
+          <h2>{movie.title}</h2>
+          <p>2D · Phụ đề tiếng Việt</p>
+        </div>
       </div>
-    </div>
-    <dl className="summary-details">
-      <dt>Rạp chiếu</dt>
-      <dd>UDU cinematic</dd>
-      <dt>Ngày chiếu</dt>
-      <dd>{dateLabel(show.date)}</dd>
-      <dt>Suất chiếu</dt>
-      <dd>
-        {show.time} · {room.name}
-      </dd>
-      <dt>Ghế đã chọn</dt>
-      <dd>
-        {selected.length ? [...selected].sort().join(", ") : "Chưa chọn ghế"}
-      </dd>
-    </dl>
-    <div className="summary-total">
-      <span>
-        Tổng cộng <small>{selected.length} ghế</small>
-      </span>
-      <strong>{money(total)}</strong>
-    </div>
-    <Button onClick={onContinue} disabled={!selected.length}>
-      {review ? "Xác nhận đặt vé" : "Tiếp tục"}
-      <Arrow />
-    </Button>
-    {review && (
-      <button className="text-button" onClick={onBack}>
-        Quay lại chọn ghế
-      </button>
-    )}
-    <p className="summary-note">
-      <Info size={15} />
-      {review
-        ? "Vé được xác nhận ngay sau khi đặt."
-        : "Chọn tối đa 8 ghế trong một lần đặt."}
-    </p>
-  </aside>
-);
+      <dl className="summary-details">
+        <dt>Rạp chiếu</dt>
+        <dd>UDU cinematic</dd>
+        <dt>Ngày chiếu</dt>
+        <dd>{dateLabel(show.date)}</dd>
+        <dt>Suất chiếu</dt>
+        <dd>
+          {show.time} · {room.name}
+        </dd>
+        <dt>Ghế đã chọn</dt>
+        <dd>
+          {selected.length ? [...selected].sort().join(", ") : "Chưa chọn ghế"}
+        </dd>
+      </dl>
+      {selected.length > 0 && (
+        <div className="coupon-box">
+          <label className="coupon-label" htmlFor="coupon-input">
+            <Tag size={14} /> Mã giảm giá
+          </label>
+          {appliedCoupon ? (
+            <div className="coupon-applied">
+              <span>
+                <strong>{appliedCoupon.code}</strong> (-{money(discount)})
+              </span>
+              <button type="button" className="text-button" onClick={onClearCoupon}>
+                Gỡ
+              </button>
+            </div>
+          ) : (
+            <div className="coupon-row">
+              <input
+                id="coupon-input"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
+                placeholder="UDU10 hoặc VIP20"
+              />
+              <button
+                type="button"
+                className="btn btn--secondary coupon-btn"
+                onClick={handleApply}
+                disabled={checkingCoupon}
+              >
+                {checkingCoupon ? "..." : "Áp dụng"}
+              </button>
+            </div>
+          )}
+          {couponError && (
+            <span className="field-error" role="alert">
+              {couponError}
+            </span>
+          )}
+        </div>
+      )}
+      <div className="summary-total">
+        <span>
+          Tổng cộng <small>{selected.length} ghế{discount > 0 ? ` · Đã giảm ${money(discount)} (gốc ${money(rawTotal)})` : ""}</small>
+        </span>
+        <strong>{money(total)}</strong>
+      </div>
+      <Button onClick={onContinue} disabled={!selected.length || submitting}>
+        {submitting ? "Đang xác nhận…" : review ? "Xác nhận đặt vé" : "Tiếp tục"}
+        <Arrow />
+      </Button>
+      {review && (
+        <button className="text-button" onClick={onBack} disabled={submitting}>
+          Quay lại chọn ghế
+        </button>
+      )}
+      <p className="summary-note">
+        <Info size={15} />
+        {review
+          ? "Vé được xác nhận ngay sau khi đặt."
+          : "Chọn tối đa 8 ghế trong một lần đặt."}
+      </p>
+    </aside>
+  );
+};
 
 export const BookingSession = ({ show, movie, room }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { book, notify } = useApp();
+  const { book, notify, syncShowSold, mergeShowSold, releaseShowSold } = useApp();
   const { selected, deadline } = useSelector((s) => s.booking);
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
   const occupied = useOccupied(show);
+  const vipList = useMemo(() => parseVipRows(room?.vipRows), [room?.vipRows]);
   const [error, setError] = useState("");
   const [review, setReview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
   const expire = useCallback(() => {
     dispatch(clearBooking());
     notify("Đã hết 5 phút giữ ghế. Vui lòng chọn lại suất chiếu.");
     navigate(`/phim/${movie.id}`, { replace: true, state: { expired: true } });
   }, [dispatch, movie.id, navigate, notify]);
   const timer = useCountdown(deadline, expire);
-  // Chỉ tính lại khi ghế đang chọn hoặc giá vé thay đổi (yêu cầu của đề).
-  const total = useMemo(() => {
-    let totalPrice = 0;
-    const vipList = Array.isArray(room?.vipRows)
-      ? room.vipRows
-      : typeof room?.vipRows === "string"
-      ? JSON.parse(room.vipRows || "[]")
-      : [];
-    for (const seatId of selected) {
-      const row = seatId[0];
-      if (vipList.includes(row)) {
-        totalPrice += show.vipPrice;
-      } else {
-        totalPrice += show.price;
+
+  useEffect(() => {
+    if (!getToken()) return undefined;
+    let active = true;
+
+    const handleTakenSeats = (seats) => {
+      const takenSelected = selectedRef.current.filter((seatId) => seats.includes(seatId));
+      if (takenSelected.length) {
+        dispatch(removeSeats(takenSelected));
+        setReview(false);
+        setError(`Ghế ${takenSelected.join(", ")} vừa được đặt bởi người khác.`);
       }
+    };
+
+    const socket = io(SOCKET_BASE, { transports: ["websocket", "polling"] });
+    const onSeatsBooked = (payload) => {
+      if (!active || payload?.showId !== show.id || !Array.isArray(payload.seats)) return;
+      mergeShowSold(show.id, payload.seats);
+      handleTakenSeats(payload.seats);
+    };
+    const onSeatsReleased = (payload) => {
+      if (!active || payload?.showId !== show.id || !Array.isArray(payload.seats)) return;
+      releaseShowSold(show.id, payload.seats);
+    };
+
+    socket.on("seatsBooked", onSeatsBooked);
+    socket.on("seatsReleased", onSeatsReleased);
+
+    const pollShow = async () => {
+      try {
+        const fresh = await api.get(`/shows/${encodeURIComponent(show.id)}`);
+        if (!active || !Array.isArray(fresh?.sold)) return;
+        syncShowSold(show.id, fresh.sold);
+        handleTakenSeats(fresh.sold);
+      } catch {
+        // Ignore transient polling failures
+      }
+    };
+    const interval = setInterval(pollShow, 5000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+      socket.off("seatsBooked", onSeatsBooked);
+      socket.off("seatsReleased", onSeatsReleased);
+      socket.disconnect();
+    };
+  }, [show.id, dispatch, syncShowSold, mergeShowSold, releaseShowSold]);
+
+  const rawTotal = useMemo(() => {
+    let totalPrice = 0;
+    for (const seatId of selected) {
+      totalPrice += vipList.includes(seatId[0]) ? show.vipPrice : show.price;
     }
     return totalPrice;
-  }, [selected, room?.vipRows, show.vipPrice, show.price]);
+  }, [selected, vipList, show.vipPrice, show.price]);
+
+  const discount = useMemo(() => {
+    if (!appliedCoupon || rawTotal <= 0) return 0;
+    return Math.min(
+      Math.round((rawTotal * appliedCoupon.discountPercent) / 100),
+      appliedCoupon.maxDiscount
+    );
+  }, [appliedCoupon, rawTotal]);
+
+  const total = Math.max(0, rawTotal - discount);
+
+  const applyCoupon = async (code) => {
+    if (getToken() || process.env.NODE_ENV !== "test") {
+      const verified = await api.post("/coupons/verify", { code });
+      setAppliedCoupon(verified);
+      return;
+    }
+    const localCoupon = OFFLINE_COUPONS[code];
+    if (!localCoupon) {
+      throw new Error("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+    }
+    setAppliedCoupon(localCoupon);
+  };
+
   const select = (id) => {
     if (selected.length >= 8 && !selected.includes(id)) {
       setError("Bạn chỉ có thể chọn tối đa 8 ghế cho mỗi lần đặt.");
@@ -184,8 +324,25 @@ export const BookingSession = ({ show, movie, room }) => {
     setError("");
     dispatch(toggleSeat(id));
   };
-  const confirm = () => {
-    if (!selected.length) return;
+
+  const finishBooking = (result) => {
+    if (result.conflicts) {
+      setError(
+        `Ghế ${result.conflicts.join(", ")} vừa được đặt. Vui lòng chọn ghế khác.`
+      );
+      dispatch(removeSeats(result.conflicts));
+      setReview(false);
+      return;
+    }
+    dispatch(clearBooking());
+    navigate("/ve-cua-toi", {
+      replace: true,
+      state: { booked: result.ticket.id },
+    });
+  };
+
+  const confirm = async () => {
+    if (!selected.length || submitting) return;
     if (Date.now() >= deadline) {
       expire();
       return;
@@ -198,21 +355,26 @@ export const BookingSession = ({ show, movie, room }) => {
       setReview(true);
       return;
     }
-    const result = book(show, selected, total);
-    if (result.conflicts) {
-      setError(
-        `Ghế ${result.conflicts.join(", ")} vừa được đặt. Vui lòng chọn ghế khác.`,
-      );
-      dispatch(removeSeats(result.conflicts));
-      setReview(false);
+
+    const couponCode = appliedCoupon?.code || null;
+    if (!getToken() && process.env.NODE_ENV === "test") {
+      const result = book(show, selected, total, couponCode);
+      finishBooking(result);
       return;
     }
-    dispatch(clearBooking());
-    navigate("/ve-cua-toi", {
-      replace: true,
-      state: { booked: result.ticket.id },
-    });
+
+    setSubmitting(true);
+    setError("");
+    try {
+      const result = await book(show, selected, total, couponCode);
+      finishBooking(result);
+    } catch (err) {
+      setError(err.message || "Không thể đặt vé. Vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
   return (
     <div className="wrap page-shell booking-page">
       <Breadcrumb
@@ -239,11 +401,6 @@ export const BookingSession = ({ show, movie, room }) => {
               <p>Kiểm tra thông tin bên cạnh trước khi xác nhận vé.</p>
               <div className="review-seats">
                 {[...selected].sort().map((id) => {
-                  const vipList = Array.isArray(room?.vipRows)
-                    ? room.vipRows
-                    : typeof room?.vipRows === "string"
-                    ? JSON.parse(room.vipRows || "[]")
-                    : [];
                   const isVip = vipList.includes(id[0]);
                   return (
                     <div key={id}>
@@ -286,8 +443,14 @@ export const BookingSession = ({ show, movie, room }) => {
           show={show}
           room={room}
           selected={selected}
+          rawTotal={rawTotal}
+          discount={discount}
           total={total}
+          appliedCoupon={appliedCoupon}
+          onApplyCoupon={applyCoupon}
+          onClearCoupon={() => setAppliedCoupon(null)}
           review={review}
+          submitting={submitting}
           onContinue={confirm}
           onBack={() => setReview(false)}
         />

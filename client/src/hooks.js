@@ -13,7 +13,7 @@ export const useLocalStorage = (key, initialValue) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
-      /* Browsers may disable storage. */
+      return;
     }
   }, [key, value]);
   useEffect(() => {
@@ -22,7 +22,7 @@ export const useLocalStorage = (key, initialValue) => {
       try {
         setValue(JSON.parse(event.newValue));
       } catch {
-        /* Ignore malformed data from other tabs. */
+        return;
       }
     };
     window.addEventListener("storage", sync);

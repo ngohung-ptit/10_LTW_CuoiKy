@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 
-// State ở trên, hàm xử lý ở giữa, JSX giao diện ở dưới.
 export const EditorHeader = ({ title, onClose }) => (
   <div className="editor-header">
     <h2>{title}</h2>

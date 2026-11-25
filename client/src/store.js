@@ -15,13 +15,11 @@ const bookingSlice = createSlice({
       const seatId = payload;
       const isSelected = state.selected.includes(seatId);
 
-      // Bấm lại ghế đã chọn thì bỏ chọn ghế đó.
       if (isSelected) {
         state.selected = state.selected.filter((id) => id !== seatId);
         return;
       }
 
-      // Chỉ thêm ghế khi chưa vượt giới hạn của đề bài.
       if (state.selected.length < 8) {
         state.selected = [...state.selected, seatId];
       }

@@ -1,28 +1,44 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import { Sequelize } from "sequelize";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
+import "./env.js";
 
-dotenv.config();
+mongoose.set("strictQuery", true);
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dialect = process.env.DB_DIALECT || "sqlite";
+export const DEFAULT_DB_NAME = "udu_cinematic";
+export const DEFAULT_MONGODB_URI = `mongodb://127.0.0.1:27017/${DEFAULT_DB_NAME}`;
 
-export const sequelize =
-  dialect === "mysql"
-    ? new Sequelize(
-        process.env.DB_NAME || "cinenep",
-        process.env.DB_USER || "root",
-        process.env.DB_PASSWORD || "",
-        {
-          host: process.env.DB_HOST || "localhost",
-          port: Number(process.env.DB_PORT) || 3306,
-          dialect: "mysql",
-          logging: false,
-        }
-      )
-    : new Sequelize({
-        dialect: "sqlite",
-        storage: process.env.DB_STORAGE || path.resolve(__dirname, "../../database.sqlite"),
-        logging: false,
-      });
+export const resolveDbName = (uri, explicitDbName = process.env.DB_NAME) => {
+  const configured = typeof explicitDbName === "string" ? explicitDbName.trim() : "";
+  if (configured) return configured;
+
+  try {
+    const parsed = new URL(uri);
+    const pathDb = parsed.pathname.replace(/^\/+/, "").split("/")[0];
+    if (pathDb) return pathDb;
+  } catch {
+    // Non-standard URI formats fall back to DEFAULT_DB_NAME
+  }
+
+  return DEFAULT_DB_NAME;
+};
+
+export const connectDB = async (
+  uri = process.env.MONGODB_URI || DEFAULT_MONGODB_URI,
+  options = {}
+) => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+  if (mongoose.connection.readyState === 2) {
+    return mongoose.connection.asPromise();
+  }
+
+  const dbName = options.dbName || resolveDbName(uri);
+  await mongoose.connect(uri, { ...options, dbName });
+  return mongoose.connection;
+};
+
+export const disconnectDB = async () => {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+};
