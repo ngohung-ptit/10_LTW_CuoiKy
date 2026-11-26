@@ -151,7 +151,7 @@ const runTests = async () => {
           Authorization: `Bearer ${adminToken}`,
         },
         body: JSON.stringify({
-          movieId: "dune",
+          movieId: futureShow.movieId,
           roomId: futureShow.roomId,
           date: futureShow.date,
           time: futureShow.time,
@@ -161,6 +161,7 @@ const runTests = async () => {
       });
       const data = await res.json();
       assert.equal(res.status, 400);
+      assert.match(data.error, /chồng giờ/i);
       console.log("7. Show Overlap Check (400): PASS", `Error: ${data.error}`);
     }
 

@@ -1,10 +1,21 @@
-import { posterSrc, readJpegPoster } from "../posters";
-import { useEffect, useRef, useState } from "react";
+import { DEFAULT_POSTER, posterSrc, readJpegPoster } from "../posters";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useApp } from "../context";
 import { Arrow, Button, Field, Notice, PageHeading } from "../components";
 import { EditorHeader } from "./EditorHeader";
 import { api } from "../api";
+
+const BASE_GENRES = [
+  "Hành động",
+  "Hoạt hình",
+  "Khoa học viễn tưởng",
+  "Tình cảm",
+  "Chính kịch",
+  "Tiểu sử",
+  "Tâm lý",
+  "Kinh dị",
+];
 
 export const AdminMovies = () => {
   const { movies, setMovies, shows } = useApp();
@@ -15,6 +26,16 @@ export const AdminMovies = () => {
   const [saving, setSaving] = useState(false);
   const uploadVersion = useRef(0);
   useEffect(() => () => { uploadVersion.current += 1; }, []);
+  const genreOptions = useMemo(
+    () => [
+      ...new Set([
+        ...BASE_GENRES,
+        ...movies.map((m) => m.genre).filter(Boolean),
+        ...(editing?.genre ? [editing.genre] : []),
+      ]),
+    ],
+    [movies, editing?.genre],
+  );
   const openEditor = (movie) => {
     if (saving) return;
     uploadVersion.current += 1;
@@ -52,7 +73,7 @@ export const AdminMovies = () => {
     age: "P",
     director: "",
     cast: "",
-    poster: "interstellar.jpg",
+    poster: DEFAULT_POSTER,
     trailer: "",
     description: "",
     status: "showing",
@@ -169,15 +190,8 @@ export const AdminMovies = () => {
                   setEditing({ ...editing, genre: e.target.value })
                 }
               >
-                {[
-                  "Hành động",
-                  "Hoạt hình",
-                  "Khoa học viễn tưởng",
-                  "Tình cảm",
-                  "Tâm lý",
-                  "Kinh dị",
-                ].map((g) => (
-                  <option key={g}>{g}</option>
+                {genreOptions.map((g) => (
+                  <option key={g} value={g}>{g}</option>
                 ))}
               </select>
             </Field>

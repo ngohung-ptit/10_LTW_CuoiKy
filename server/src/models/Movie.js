@@ -53,7 +53,7 @@ const movieSchema = new mongoose.Schema(
     poster: {
       type: String,
       required: true,
-      default: "interstellar.jpg",
+      default: "the-odyssey.jpg",
     },
     trailer: {
       type: String,

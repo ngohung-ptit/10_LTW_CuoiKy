@@ -125,6 +125,7 @@ export const seedDatabase = async ({ closeConnection = true } = {}) => {
   await Show.insertMany(shows);
 
   const firstShow = shows[2] || shows[0];
+  const firstShowRoom = initialRooms.find((r) => r.id === firstShow.roomId);
   const ticketId = `UDU-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const qrCode = await QRCode.toDataURL(ticketId).catch(() => null);
 
@@ -133,7 +134,7 @@ export const seedDatabase = async ({ closeConnection = true } = {}) => {
     userId: "udu-member",
     showId: firstShow._id,
     movieId: firstShow.movieId,
-    roomName: "Phòng 01",
+    roomName: firstShowRoom?.name || "Phòng 01",
     seats: [
       { seatId: "A3", price },
       { seatId: "D5", price: vipPrice },

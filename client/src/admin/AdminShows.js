@@ -36,8 +36,6 @@ export const AdminShows = () => {
     }
     const start = showDate(editing).getTime();
     const end = start + movie.duration * 60000;
-    // Hai khoảng giờ bị trùng khi suất mới bắt đầu trước lúc suất cũ kết thúc
-    // và kết thúc sau lúc suất cũ bắt đầu. Chỉ so sánh trong cùng một phòng.
     const overlap = shows.some((s) => {
       const duration = movies.find((m) => m.id === s.movieId)?.duration || 120;
       const otherStart = showDate(s).getTime();
@@ -88,6 +86,10 @@ export const AdminShows = () => {
       setError(error.status ? error.message : "Không kết nối được backend. Kiểm tra server rồi thử lại.");
     } finally { setSaving(false); }
   };
+  const showingMovies = movies.filter((m) => m.status === "showing");
+  const selectableMovies = showingMovies.length
+    ? movies.filter((m) => m.status === "showing" || m.id === editing?.movieId)
+    : movies;
   const filtered = shows
     .filter((s) => s.date === date)
     .sort((a, b) => a.time.localeCompare(b.time));
@@ -100,8 +102,9 @@ export const AdminShows = () => {
         <Button
           disabled={saving}
           onClick={() => {
+            const defaultMovie = showingMovies[0] || movies[0];
             setEditing({
-              movieId: movies[0]?.id || "",
+              movieId: defaultMovie?.id || "",
               roomId: rooms[0]?.id || "",
               date,
               time: "19:00",
@@ -131,7 +134,7 @@ export const AdminShows = () => {
                   setEditing({ ...editing, movieId: e.target.value })
                 }
               >
-                {movies.map((m) => (
+                {selectableMovies.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.title}
                   </option>

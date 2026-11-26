@@ -78,7 +78,7 @@ export const TicketsPage = () => {
           return (
             <article className="ticket-card" key={ticket.id}>
               <img
-                src={posterSrc(movie?.poster || "interstellar.jpg")}
+                src={posterSrc(movie?.poster)}
                 alt={movie?.title || "Phim"}
                 width="120"
                 height="180"

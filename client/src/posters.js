@@ -1,10 +1,19 @@
-export const posterSrc = (poster = "interstellar.jpg") =>
-  poster.startsWith("data:image/jpeg;") ? poster : `/assets/images/${poster}`;
+export const DEFAULT_POSTER = "the-odyssey.jpg";
 
-export const posterSrcSet = (poster) =>
-  poster.startsWith("data:")
+const resolvePoster = (poster) =>
+  !poster || poster === "interstellar.jpg" ? DEFAULT_POSTER : poster;
+
+export const posterSrc = (poster = DEFAULT_POSTER) => {
+  const resolved = resolvePoster(poster);
+  return resolved.startsWith("data:image/jpeg;") ? resolved : `/assets/images/${resolved}`;
+};
+
+export const posterSrcSet = (poster = DEFAULT_POSTER) => {
+  const resolved = resolvePoster(poster);
+  return resolved.startsWith("data:")
     ? undefined
-    : `/assets/images/${poster.replace(/\.jpg$/, "-small.jpg")} 342w, ${posterSrc(poster)} 500w`;
+    : `/assets/images/${resolved.replace(/\.jpg$/, "-small.jpg")} 342w, ${posterSrc(resolved)} 500w`;
+};
 
 export const readJpegPoster = async (file) => {
   if (!/\.jpe?g$/i.test(file.name) || (file.type && file.type !== "image/jpeg")) {

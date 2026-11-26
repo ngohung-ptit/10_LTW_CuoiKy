@@ -34,10 +34,24 @@ export const AdminDashboard = () => {
 
   const grouped = serverAnalytics?.byMovie || [];
 
+  const availableDates = useMemo(() => {
+    const revenueDates = (serverAnalytics?.byDate || [])
+      .map((item) => item.date)
+      .filter(Boolean);
+    return [...new Set([...days, ...revenueDates, ...(date ? [date] : [])])].sort(
+      (a, b) => a.localeCompare(b),
+    );
+  }, [serverAnalytics, date]);
+
   const daily = useMemo(() => {
-    const byDateMap = new Map((serverAnalytics?.byDate || []).map((item) => [item.date, item.total]));
-    return days.map((day) => ({ date: day, total: byDateMap.get(day) || 0 }));
-  }, [serverAnalytics]);
+    const byDateMap = new Map(
+      (serverAnalytics?.byDate || []).map((item) => [item.date, item.total]),
+    );
+    return availableDates.map((day) => ({
+      date: day,
+      total: byDateMap.get(day) || 0,
+    }));
+  }, [serverAnalytics, availableDates]);
 
   const stats = serverAnalytics?.dashboard;
   if (!stats) return <Notice error={Boolean(error)}>{error || "Đang tải thống kê..."}</Notice>;
@@ -54,7 +68,7 @@ export const AdminDashboard = () => {
           Ngày chiếu
           <select value={date} onChange={(e) => setDate(e.target.value)}>
             <option value="">Tất cả ngày</option>
-            {days.map((day) => (
+            {availableDates.map((day) => (
               <option value={day} key={day}>
                 {dateLabel(day)}
               </option>

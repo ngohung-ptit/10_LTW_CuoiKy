@@ -15,7 +15,8 @@ Dữ liệu tài khoản, phim, phòng, suất chiếu, vé và thống kê đư
 │   ├── scripts/             Tiện ích preview bản build và đồng bộ seedData.json sang client
 │   ├── src/
 │   │   ├── admin/           Giao diện quản trị (dashboard Aggregation, phim, phòng, suất chiếu)
-│   │   ├── pages/           Trang chủ, danh sách phim, chi tiết phim, lịch chiếu, vé của tôi
+│   │   ├── pages/           Trang chủ, danh sách phim, chi tiết phim, lịch chiếu, vé của tôi, 404
+│   │   ├── admin.js         Khung bố cục khu vực quản trị (AdminLayout + nested Outlet)
 │   │   ├── api.js           Module gọi REST API tập trung, tự động gắn JWT
 │   │   ├── App.js           Khai báo router, nested routes & route bảo vệ
 │   │   ├── auth.js          Quản lý tài khoản, phiên đăng nhập JWT
@@ -23,24 +24,27 @@ Dữ liệu tài khoản, phim, phòng, suất chiếu, vé và thống kê đư
 │   │   ├── components.js    Các components tái sử dụng (Header, Footer, Button, Field,...)
 │   │   ├── context.js       Context API dữ liệu dùng chung, theme sáng/tối & đồng bộ API
 │   │   ├── data.js          Hàm tiện ích định dạng ngày giờ, tiền tệ, parseVipRows và cấu hình lịch
-│   │   ├── seedData.json    Bản sao cấu hình seed được đồng bộ tự động từ server
 │   │   ├── hooks.js         Custom hooks (useLocalStorage, useDebounce, useCountdown)
+│   │   ├── posters.js       Chuẩn hóa đường dẫn poster, srcSet responsive & kiểm tra ảnh JPG upload
+│   │   ├── responsive.css   Responsive cho tablet và điện thoại di động
+│   │   ├── seedData.json    Bản sao cấu hình seed được đồng bộ tự động từ server
 │   │   └── store.js         Redux Toolkit quản lý ghế đang chọn & phiên đặt vé
 │   └── package.json
 ├── server/                  Toàn bộ backend (Node.js, Express, MongoDB, Mongoose)
 │   ├── src/
-│   │   ├── config/          Kết nối CSDL MongoDB qua Mongoose
+│   │   ├── config/          Kết nối CSDL MongoDB qua Mongoose & nạp biến môi trường (.env)
 │   │   ├── controllers/     Xử lý logic nghiệp vụ, Aggregation Pipeline, phân trang & lọc
 │   │   ├── middlewares/     Xác thực JWT, phân quyền Admin, xử lý lỗi tập trung
 │   │   ├── models/          6 Mongoose Schemas (User, Movie, Room, Show, Ticket, Coupon)
-│   │   ├── routes/          Định tuyến REST API chuẩn
+│   │   ├── routes/          Định tuyến REST API tách theo tài nguyên
 │   │   ├── utils/           Tiện ích sinh ID dễ nhớ & phân trang/datetime
-│   │   └── seed/            Nguồn dữ liệu mẫu gốc (seedData.json) và script nạp MongoDB (seedData.js)
-│   ├── server.js            Entry point khởi động server Express + Socket.io
-│   ├── testApi.js           Kịch bản kiểm thử tự động toàn bộ API
+│   │   ├── seed/            Nguồn dữ liệu mẫu gốc (seedData.json) và script nạp MongoDB (seedData.js)
+│   │   └── app.js           Khởi tạo Express app, CORS, JSON parser, routes & error handler
+│   ├── server.js            Entry point khởi động HTTP server + Socket.IO
+│   ├── testApi.js           Kịch bản kiểm thử tự động toàn bộ REST API
+│   ├── README.md            Tài liệu chi tiết kiến trúc CSDL và danh sách API backend
 │   ├── .env.example         Mẫu biến môi trường
 │   └── package.json
-├── documentation.md         Tài liệu kỹ thuật và giải thích chi tiết toàn bộ code
 └── package.json             Lệnh điều khiển toàn bộ dự án từ thư mục gốc
 ```
 
@@ -64,11 +68,11 @@ cp server/.env.example server/.env
 # Nạp dữ liệu mẫu (phim, phòng, suất chiếu, mã giảm giá, tài khoản demo) và đồng bộ sang client
 npm run seed
 
-# Khởi động backend (mặc định cổng 5000)
+# Khởi động backend (mặc định cổng 5000, hoặc dùng npm run server:dev để tự reload)
 npm run server
 ```
 
-> **Ghi chú CSDL:** Hệ thống sử dụng **MongoDB** qua **Mongoose ODM**. Bạn có thể dùng MongoDB Community cục bộ (`MONGODB_URI=mongodb://127.0.0.1:27017/udu_cinematic`) hoặc chuỗi kết nối **MongoDB Atlas** (`mongodb+srv://...`) kèm biến `DB_NAME=udu_cinematic` trong `server/.env` (tránh trường hợp chuỗi Atlas kết thúc bằng `/` làm MongoDB mặc định tạo database tên `test`). Xem hướng dẫn chi tiết trong [server/README.md](server/README.md) hoặc [documentation.md](documentation.md).
+> **Ghi chú CSDL:** Hệ thống sử dụng **MongoDB** qua **Mongoose ODM**. Bạn có thể dùng MongoDB Community cục bộ (`MONGODB_URI=mongodb://127.0.0.1:27017/udu_cinematic`) hoặc chuỗi kết nối **MongoDB Atlas** (`mongodb+srv://...`) kèm biến `DB_NAME=udu_cinematic` trong `server/.env` (tránh trường hợp chuỗi Atlas kết thúc bằng `/` làm MongoDB mặc định tạo database tên `test`). Xem tài liệu API và thiết kế CSDL chi tiết trong [server/README.md](server/README.md).
 
 ### 2. Chạy Frontend
 
@@ -76,7 +80,7 @@ Mở một terminal khác tại thư mục gốc:
 
 ```bash
 # Cài đặt thư viện frontend
-npm --prefix client ci --legacy-peer-deps
+npm --prefix client install --legacy-peer-deps
 
 # Khởi động giao diện React (mặc định cổng 3000)
 npm start

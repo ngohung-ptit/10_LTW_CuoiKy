@@ -31,7 +31,7 @@ const buildMoviePayload = (body, existing = null) => {
     age: ALLOWED_AGES.has(merged.age) ? merged.age : "P",
     director: typeof merged.director === "string" ? merged.director.trim() : "",
     cast: typeof merged.cast === "string" ? merged.cast.trim() : "",
-    poster: typeof merged.poster === "string" && merged.poster.trim() ? merged.poster.trim() : "interstellar.jpg",
+    poster: typeof merged.poster === "string" && merged.poster.trim() ? merged.poster.trim() : "the-odyssey.jpg",
     trailer: typeof merged.trailer === "string" ? merged.trailer.trim() : "",
     status: ALLOWED_STATUSES.has(merged.status) ? merged.status : "showing",
     description: typeof merged.description === "string" ? merged.description.trim() : "",
