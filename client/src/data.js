@@ -12,7 +12,7 @@ export const localDate = (value = new Date()) =>
     day: "2-digit",
   }).format(new Date(value));
 
-const { daysCount, price, vipPrice, timesByRoom, offlineSoldByRoom } =
+const { daysCount, price, vipPrice, timesByRoom, dailySchedule, offlineSoldByRoom } =
   seedCatalog.showConfig;
 
 export const days = Array.from({ length: daysCount }, (_, index) => {
@@ -21,36 +21,51 @@ export const days = Array.from({ length: daysCount }, (_, index) => {
   return localDate(date);
 });
 
-const times1 = timesByRoom["room-1"];
-const times2 = timesByRoom["room-2"];
-const soldRoom1 = offlineSoldByRoom["room-1"];
-const soldRoom2 = offlineSoldByRoom["room-2"];
-
 export const initialShows = days.flatMap((date, dayIndex) =>
-  movies
-    .filter((m) => m.status === "showing")
-    .flatMap((movie, i) => [
-      {
-        id: `${date}-${movie.id}-1`,
-        movieId: movie.id,
-        roomId: "room-1",
-        date,
-        time: times1[i % times1.length],
-        price,
-        vipPrice,
-        sold: soldRoom1.slice(0, 3 + (dayIndex % 3)),
-      },
-      {
-        id: `${date}-${movie.id}-2`,
-        movieId: movie.id,
-        roomId: "room-2",
-        date,
-        time: times2[i % times2.length],
-        price,
-        vipPrice,
-        sold: soldRoom2,
-      },
-    ]),
+  Array.isArray(dailySchedule) && dailySchedule.length > 0
+    ? dailySchedule.map((slot) => {
+        const soldRoom = offlineSoldByRoom[slot.roomId] || [];
+        const suffix = slot.roomId.replace(/^room-/, "");
+        const timeTag = slot.time.replace(":", "");
+        return {
+          id: `${date}-${slot.movieId}-${suffix}-${timeTag}`,
+          movieId: slot.movieId,
+          roomId: slot.roomId,
+          date,
+          time: slot.time,
+          price,
+          vipPrice,
+          sold:
+            slot.roomId === "room-1"
+              ? soldRoom.slice(0, 3 + (dayIndex % 3))
+              : soldRoom,
+        };
+      })
+    : movies
+        .filter((m) => m.status === "showing")
+        .flatMap((movie, i) =>
+          initialRooms.flatMap((room, roomIdx) => {
+            const roomTimes = timesByRoom[room.id] || [];
+            if (roomTimes.length === 0) return [];
+            const soldRoom = offlineSoldByRoom[room.id] || [];
+            const suffix = room.id.replace(/^room-/, "") || String(roomIdx + 1);
+            return [
+              {
+                id: `${date}-${movie.id}-${suffix}`,
+                movieId: movie.id,
+                roomId: room.id,
+                date,
+                time: roomTimes[i % roomTimes.length],
+                price,
+                vipPrice,
+                sold:
+                  room.id === "room-1"
+                    ? soldRoom.slice(0, 3 + (dayIndex % 3))
+                    : soldRoom,
+              },
+            ];
+          }),
+        ),
 );
 
 export const showDate = (show) =>

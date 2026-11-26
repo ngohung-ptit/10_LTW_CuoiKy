@@ -1,94 +1,199 @@
 {
   "movies": [
     {
-      "id": "interstellar",
-      "title": "Interstellar",
-      "subtitle": "Hố đen tử thần",
-      "genre": "Khoa học viễn tưởng",
-      "duration": 169,
-      "year": 2014,
+      "id": "avengers-doomsday",
+      "title": "Avengers: Doomsday",
+      "subtitle": "Avengers: Ngày Tận Thế",
+      "genre": "Hành động / Khoa học viễn tưởng",
+      "duration": 150,
+      "year": 2026,
       "age": "T13",
-      "director": "Christopher Nolan",
-      "cast": "Matthew McConaughey, Anne Hathaway, Jessica Chastain",
-      "poster": "interstellar.jpg",
-      "trailer": "zSWdZVtXT7E",
-      "status": "showing",
-      "description": "Khi Trái Đất không còn là mái nhà, Cooper cùng một nhóm phi hành gia đi qua hố sâu vũ trụ để tìm tương lai cho nhân loại. Một chuyến đi vượt qua khoảng cách, thời gian và tình cha con."
+      "director": "Anthony Russo, Joe Russo",
+      "cast": "Robert Downey Jr., Pedro Pascal, Chris Hemsworth, Vanessa Kirby",
+      "poster": "avengers-doomsday.jpg",
+      "trailer": "TQfATDZY5Y4",
+      "status": "upcoming",
+      "description": "Sau các biến cố lớn của đa vũ trụ, các thành viên Avengers cùng Fantastic Four phải hợp sức đối đầu với hiểm họa khổng lồ mang tên Doctor Doom (Victor von Doom) nhằm bảo vệ sự tồn vong của toàn bộ thực tại."
     },
     {
-      "id": "dune",
-      "title": "Dune: Part Two",
-      "subtitle": "Hành tinh cát: Phần hai",
-      "genre": "Khoa học viễn tưởng",
-      "duration": 166,
-      "year": 2024,
-      "age": "T16",
-      "director": "Denis Villeneuve",
-      "cast": "Timothée Chalamet, Zendaya, Rebecca Ferguson",
-      "poster": "dune.jpg",
-      "trailer": "Way9Dexny3w",
-      "status": "showing",
-      "description": "Paul Atreides sát cánh cùng Chani và người Fremen trên hành trình tìm lại công lý cho gia đình. Giữa tình yêu và vận mệnh, những lựa chọn của Paul sẽ thay đổi tương lai Arrakis."
-    },
-    {
-      "id": "soul",
-      "title": "Soul",
-      "subtitle": "Cuộc sống nhiệm màu",
-      "genre": "Hoạt hình",
-      "duration": 100,
-      "year": 2020,
+      "id": "hexed",
+      "title": "Hexed",
+      "subtitle": "Thế Giới Phép Thuật",
+      "genre": "Hoạt hình / Gia đình",
+      "duration": 103,
+      "year": 2026,
       "age": "P",
-      "director": "Pete Docter",
-      "cast": "Jamie Foxx, Tina Fey",
-      "poster": "soul.jpg",
-      "trailer": "xOsLIiBStEs",
-      "status": "showing",
-      "description": "Joe Gardner, một giáo viên âm nhạc yêu jazz, bất ngờ lạc vào một thế giới nơi các linh hồn tìm thấy cá tính của mình. Cùng linh hồn 22, Joe khám phá những điều nhỏ bé làm nên cuộc sống."
-    },
-    {
-      "id": "spirited-away",
-      "title": "Spirited Away",
-      "subtitle": "Vùng đất linh hồn",
-      "genre": "Hoạt hình",
-      "duration": 125,
-      "year": 2001,
-      "age": "P",
-      "director": "Hayao Miyazaki",
-      "cast": "Rumi Hiiragi, Miyu Irino",
-      "poster": "spirited.jpg",
+      "director": "Jason Hand, Fawn Veerasunthorn",
+      "cast": "Hailee Steinfeld, Rashida Jones, Tracey Ullman",
+      "poster": "hexed.jpg",
       "trailer": "ByXuk9QqQkk",
       "status": "showing",
-      "description": "Cô bé Chihiro bước vào một thế giới kỳ lạ sau khi gia đình dừng chân tại một thị trấn bỏ hoang. Để cứu cha mẹ, cô phải học cách tự đứng vững và tìm lại con đường về nhà."
+      "description": "Billie vô tình khám phá ra thân phận phù thủy của mình và bị cuốn vào cuộc phiêu lưu đến thế giới phép thuật bí mật. Cùng với người mẹ Alice cẩn trọng, hai mẹ con dần mở khóa những bí mật gia đình thay đổi cả thế giới phù thủy."
     },
     {
-      "id": "inception",
-      "title": "Inception",
-      "subtitle": "Kẻ đánh cắp giấc mơ",
+      "id": "phi-vu-bong-tuyet-vang",
+      "title": "Phi Vụ Bông Tuyết Vàng",
+      "subtitle": "Phi Vụ Bông Tuyết Vàng",
+      "genre": "Hài / Hành động",
+      "duration": 90,
+      "year": 2026,
+      "age": "T16",
+      "director": "Dương Khắc Linh, Phạm Hồ Sơn",
+      "cast": "Steven Nguyễn, Vân Trang, NSND Kim Xuân, Đình Khang",
+      "poster": "phi-vu-bong-tuyet-vang.jpg",
+      "trailer": "NmTPCfCEOBg",
+      "status": "upcoming",
+      "description": "Tâm điểm xoay quanh 'Bông Tuyết Vàng' – món bảo vật gia truyền thất lạc của một gia tộc kim hoàn danh giá. Đêm tiệc bỗng chốc trở thành cuộc chiến sinh tồn và truy tìm báu vật nghẹt thở khi phiên đấu giá trên du thuyền xa hoa bị một băng cướp tấn công."
+    },
+    {
+      "id": "dark-knight",
+      "title": "The Dark Knight",
+      "subtitle": "Kỵ sĩ bóng đêm",
       "genre": "Hành động",
-      "duration": 148,
-      "year": 2010,
+      "duration": 152,
+      "year": 2008,
       "age": "T16",
       "director": "Christopher Nolan",
-      "cast": "Leonardo DiCaprio, Joseph Gordon-Levitt",
-      "poster": "inception.jpg",
-      "trailer": "Qwe6qXFTdgc",
-      "status": "upcoming",
-      "description": "Dom Cobb có khả năng xâm nhập giấc mơ để đánh cắp bí mật. Nhiệm vụ cuối cùng đưa anh vào một mê cung nhiều tầng, nơi ranh giới giữa ký ức và thực tại dần biến mất."
+      "cast": "Christian Bale, Heath Ledger, Aaron Eckhart",
+      "poster": "dark-knight.jpg",
+      "trailer": "TQfATDZY5Y4",
+      "status": "showing",
+      "description": "Batman cùng Trung úy Gordon và Biện lý Harvey Dent tìm cách quét sạch tội phạm ở Gotham, nhưng Joker xuất hiện và đẩy thành phố vào hỗn loạn, buộc họ phải đối mặt với những lựa chọn đạo đức khắc nghiệt."
     },
     {
-      "id": "your-name",
-      "title": "Your Name",
-      "subtitle": "Tên cậu là gì?",
+      "id": "parasite",
+      "title": "Parasite",
+      "subtitle": "Ký sinh trùng",
+      "genre": "Chính kịch",
+      "duration": 132,
+      "year": 2019,
+      "age": "T18",
+      "director": "Bong Joon-ho",
+      "cast": "Song Kang-ho, Choi Woo-shik, Park So-dam",
+      "poster": "parasite.jpg",
+      "trailer": "w_0KJAzyUJc",
+      "status": "showing",
+      "description": "Gia đình Ki-taek nghèo khó lần lượt len vào làm việc trong dinh thự của gia đình Park giàu có. Một bộ phim hài đen sắc sảo về khoảng cách giàu nghèo và những bí mật dưới tầng hầm."
+    },
+    {
+      "id": "oppenheimer",
+      "title": "Oppenheimer",
+      "subtitle": "Cha đẻ bom nguyên tử",
+      "genre": "Tiểu sử",
+      "duration": 180,
+      "year": 2023,
+      "age": "T18",
+      "director": "Christopher Nolan",
+      "cast": "Cillian Murphy, Emily Blunt, Robert Downey Jr.",
+      "poster": "oppenheimer.jpg",
+      "trailer": "bK6ldnjE3Y0",
+      "status": "showing",
+      "description": "Câu chuyện về J. Robert Oppenheimer, nhà vật lý lãnh đạo Dự án Manhattan chế tạo bom nguyên tử, và cái giá mà ông phải trả cho thành tựu thay đổi lịch sử nhân loại."
+    },
+    {
+      "id": "everything-everywhere",
+      "title": "Everything Everywhere All at Once",
+      "subtitle": "Đa vũ trụ tàn khốc",
+      "genre": "Khoa học viễn tưởng",
+      "duration": 139,
+      "year": 2022,
+      "age": "T16",
+      "director": "Daniel Kwan, Daniel Scheinert",
+      "cast": "Michelle Yeoh, Ke Huy Quan, Stephanie Hsu",
+      "poster": "everything-everywhere.jpg",
+      "trailer": "wxN1T1uxQ2g",
+      "status": "showing",
+      "description": "Evelyn, một chủ tiệm giặt ủi nhập cư, bất ngờ được giao nhiệm vụ du hành qua nhiều vũ trụ song song để cứu lấy gia đình và cả đa vũ trụ khỏi một mối đe dọa khổng lồ."
+    },
+    {
+      "id": "callmebyyourname",
+      "title": "Gọi Em Bằng Tên Anh",
+      "subtitle": "",
       "genre": "Tình cảm",
-      "duration": 106,
-      "year": 2016,
+      "duration": 132,
+      "year": 2017,
+      "age": "P",
+      "director": "Luca Guadagnino",
+      "cast": "Timothée Chalamet, Armie Hammer, Michael Stuhlbarg",
+      "poster": "call-me-by-your-name.jpg",
+      "trailer": "Z9AYPxH5NTM",
+      "status": "showing",
+      "description": "Gọi Em Bằng Tên Anh được chuyển thể từ tiểu thuyết cùng tên của nhà văn André Aciman, lấy bối cảnh những năm 80. Nội dung tập trung vào mối quan hệ đầy cảm hứng giữa cậu bé 17 tuổi Elio (Timothée Chalamet) và chàng sinh viên 24 tuổi Oliver (Armie Hammer). Oliver là sinh viên khảo cổ học người Mỹ đến ở trong biệt thự nhà Elio và theo học giáo sư là bố của cậu bé. Hai chàng trai trẻ đã bị cuốn vào một mối tình lãng mạn giữa khung hình tuyệt đẹp của miền quê nước Ý trong một mùa hè rực rỡ năm 1983."
+    },
+    {
+      "id": "mai",
+      "title": "Mai",
+      "subtitle": "Mai",
+      "genre": "Tình cảm",
+      "duration": 131,
+      "year": 2024,
+      "age": "T18",
+      "director": "Trấn Thành",
+      "cast": "Phương Anh Đào, Tuấn Trần, Trấn Thành",
+      "poster": "mai.jpg",
+      "trailer": "HXWRTGbhb4U",
+      "status": "showing",
+      "description": "Mai, người phụ nữ ngoài 30 làm nghề massage, vướng vào mối tình với chàng trai trẻ Sâm. Câu chuyện về những tổn thương quá khứ và khát khao được yêu thương."
+    },
+    {
+      "id": "weathering-with-you",
+      "title": "Weathering With You",
+      "subtitle": "Đứa con của thời tiết",
+      "genre": "Hoạt hình",
+      "duration": 112,
+      "year": 2019,
       "age": "T13",
       "director": "Makoto Shinkai",
-      "cast": "Ryunosuke Kamiki, Mone Kamishiraishi",
-      "poster": "your-name.jpg",
-      "trailer": "xU47nhruN-Q",
+      "cast": "Kotaro Daigo, Nana Mori",
+      "poster": "weathering-with-you.jpg",
+      "trailer": "mBe3otDfRz0",
+      "status": "showing",
+      "description": "Cậu bé bỏ nhà ra Tokyo gặp Hina, cô gái có khả năng làm trời quang mây tạnh. Giữa những cơn mưa triền miên, họ phải chọn giữa hạnh phúc riêng và sự cân bằng của thành phố."
+    },
+    {
+      "id": "the-odyssey",
+      "title": "The Odyssey",
+      "subtitle": "Sử thi Odyssey",
+      "genre": "Hành động / Phiêu lưu",
+      "duration": 150,
+      "year": 2026,
+      "age": "T13",
+      "director": "Christopher Nolan",
+      "cast": "Matt Damon, Tom Holland, Anne Hathaway, Robert Pattinson, Lupita Nyong'o, Zendaya, Charlize Theron",
+      "poster": "the-odyssey.jpg",
+      "trailer": "TQfATDZY5Y4",
+      "status": "showing",
+      "description": "Tác phẩm sử thi do Christopher Nolan đạo diễn, tái hiện hành trình vượt đại dương đầy gian nan của Odysseus trên con đường trở về quê hương Ithaca sau cuộc chiến thành Troy."
+    },
+    {
+      "id": "spider-man-brand-new-day",
+      "title": "Spider-Man: Brand New Day",
+      "subtitle": "Người Nhện: Ngày Mới",
+      "genre": "Hành động / Phiêu lưu",
+      "duration": 145,
+      "year": 2026,
+      "age": "T13",
+      "director": "Destin Daniel Cretton",
+      "cast": "Tom Holland, Zendaya, Sadie Sink, Jon Bernthal, Mark Ruffalo",
+      "poster": "spider-man-brand-new-day.jpg",
+      "trailer": "TQfATDZY5Y4",
+      "status": "showing",
+      "description": "Bốn năm sau các sự kiện của No Way Home, Peter Parker sống ẩn dật và toàn tâm bảo vệ New York với tư cách Người Nhện. Khi một thế lực bí ẩn mới trỗi dậy, Peter buộc phải đối mặt với những biến đổi nguy hiểm trong sức mạnh của mình để bảo vệ thành phố và những người không còn nhớ tên anh."
+    },
+    {
+      "id": "dune-part-three",
+      "title": "Dune: Part Three",
+      "subtitle": "Hành tinh cát: Phần ba",
+      "genre": "Khoa học viễn tưởng",
+      "duration": 165,
+      "year": 2026,
+      "age": "T16",
+      "director": "Denis Villeneuve",
+      "cast": "Timothée Chalamet, Zendaya, Florence Pugh, Anya Taylor-Joy, Robert Pattinson",
+      "poster": "dune-part-three.jpg",
+      "trailer": "Way9Dexny3w",
       "status": "upcoming",
-      "description": "Mitsuha sống ở một thị trấn miền núi, Taki sống giữa Tokyo. Những lần hoán đổi cơ thể bất ngờ kết nối hai người xa lạ trong một câu chuyện về ký ức và cuộc gặp gỡ."
+      "description": "Lấy bối cảnh hơn một thập kỷ sau Dune: Part Two, hoàng đế Paul Atreides phải đối mặt với hệ quả khốc liệt của cuộc thánh chiến mang danh mình cùng những âm mưu chính trị và thế lực ngầm nhằm lật đổ ngai vàng."
     }
   ],
   "rooms": [
@@ -97,14 +202,73 @@
       "name": "Phòng 01",
       "rows": 8,
       "columns": 10,
-      "vipRows": ["D", "E", "F"]
+      "vipRows": [
+        "D",
+        "E",
+        "F"
+      ]
     },
     {
       "id": "room-2",
       "name": "Phòng 02",
       "rows": 6,
       "columns": 8,
-      "vipRows": ["C", "D"]
+      "vipRows": [
+        "C",
+        "D"
+      ]
+    },
+    {
+      "id": "room-3",
+      "name": "Phòng 03",
+      "rows": 8,
+      "columns": 9,
+      "vipRows": [
+        "D",
+        "E",
+        "F"
+      ]
+    },
+    {
+      "id": "room-4",
+      "name": "Phòng 04",
+      "rows": 9,
+      "columns": 10,
+      "vipRows": [
+        "E",
+        "F",
+        "G"
+      ]
+    },
+    {
+      "id": "room-5",
+      "name": "Phòng 05",
+      "rows": 6,
+      "columns": 8,
+      "vipRows": [
+        "C",
+        "D"
+      ]
+    },
+    {
+      "id": "room-6",
+      "name": "Phòng 06",
+      "rows": 7,
+      "columns": 8,
+      "vipRows": [
+        "D",
+        "E"
+      ]
+    },
+    {
+      "id": "room-7",
+      "name": "Phòng 07",
+      "rows": 5,
+      "columns": 6,
+      "vipRows": [
+        "C",
+        "D"
+      ]
     }
   ],
   "coupons": [
@@ -128,12 +292,301 @@
     "price": 75000,
     "vipPrice": 95000,
     "timesByRoom": {
-      "room-1": ["10:00", "13:15", "16:30", "20:00"],
-      "room-2": ["20:00", "10:00", "13:15", "16:30"]
+      "room-1": [
+        "09:00",
+        "11:00",
+        "13:15",
+        "16:00",
+        "19:00",
+        "22:00"
+      ],
+      "room-2": [
+        "09:00",
+        "12:00",
+        "14:30",
+        "17:15",
+        "19:45"
+      ],
+      "room-3": [
+        "09:00",
+        "11:30",
+        "14:15",
+        "16:45",
+        "19:15",
+        "21:45"
+      ],
+      "room-4": [
+        "09:00",
+        "12:15",
+        "15:30",
+        "17:30",
+        "20:15",
+        "22:15"
+      ],
+      "room-5": [
+        "09:00",
+        "11:45",
+        "14:45",
+        "17:30",
+        "20:15"
+      ],
+      "room-6": [
+        "09:00",
+        "11:30",
+        "13:30",
+        "16:00",
+        "18:30",
+        "20:30"
+      ],
+      "room-7": [
+        "09:00",
+        "11:30",
+        "14:15",
+        "16:30",
+        "19:45",
+        "22:30"
+      ]
     },
+    "dailySchedule": [
+      {
+        "roomId": "room-1",
+        "time": "09:00",
+        "movieId": "hexed"
+      },
+      {
+        "roomId": "room-2",
+        "time": "09:00",
+        "movieId": "dark-knight"
+      },
+      {
+        "roomId": "room-3",
+        "time": "09:00",
+        "movieId": "parasite"
+      },
+      {
+        "roomId": "room-4",
+        "time": "09:00",
+        "movieId": "oppenheimer"
+      },
+      {
+        "roomId": "room-5",
+        "time": "09:00",
+        "movieId": "everything-everywhere"
+      },
+      {
+        "roomId": "room-6",
+        "time": "09:00",
+        "movieId": "callmebyyourname"
+      },
+      {
+        "roomId": "room-7",
+        "time": "09:00",
+        "movieId": "mai"
+      },
+      {
+        "roomId": "room-1",
+        "time": "11:00",
+        "movieId": "weathering-with-you"
+      },
+      {
+        "roomId": "room-7",
+        "time": "11:30",
+        "movieId": "the-odyssey"
+      },
+      {
+        "roomId": "room-3",
+        "time": "11:30",
+        "movieId": "spider-man-brand-new-day"
+      },
+      {
+        "roomId": "room-6",
+        "time": "11:30",
+        "movieId": "hexed"
+      },
+      {
+        "roomId": "room-5",
+        "time": "11:45",
+        "movieId": "dark-knight"
+      },
+      {
+        "roomId": "room-2",
+        "time": "12:00",
+        "movieId": "parasite"
+      },
+      {
+        "roomId": "room-4",
+        "time": "12:15",
+        "movieId": "oppenheimer"
+      },
+      {
+        "roomId": "room-1",
+        "time": "13:15",
+        "movieId": "everything-everywhere"
+      },
+      {
+        "roomId": "room-6",
+        "time": "13:30",
+        "movieId": "callmebyyourname"
+      },
+      {
+        "roomId": "room-3",
+        "time": "14:15",
+        "movieId": "mai"
+      },
+      {
+        "roomId": "room-7",
+        "time": "14:15",
+        "movieId": "weathering-with-you"
+      },
+      {
+        "roomId": "room-2",
+        "time": "14:30",
+        "movieId": "the-odyssey"
+      },
+      {
+        "roomId": "room-5",
+        "time": "14:45",
+        "movieId": "spider-man-brand-new-day"
+      },
+      {
+        "roomId": "room-4",
+        "time": "15:30",
+        "movieId": "hexed"
+      },
+      {
+        "roomId": "room-1",
+        "time": "16:00",
+        "movieId": "dark-knight"
+      },
+      {
+        "roomId": "room-6",
+        "time": "16:00",
+        "movieId": "parasite"
+      },
+      {
+        "roomId": "room-7",
+        "time": "16:30",
+        "movieId": "oppenheimer"
+      },
+      {
+        "roomId": "room-3",
+        "time": "16:45",
+        "movieId": "callmebyyourname"
+      },
+      {
+        "roomId": "room-2",
+        "time": "17:15",
+        "movieId": "mai"
+      },
+      {
+        "roomId": "room-5",
+        "time": "17:30",
+        "movieId": "the-odyssey"
+      },
+      {
+        "roomId": "room-4",
+        "time": "17:30",
+        "movieId": "spider-man-brand-new-day"
+      },
+      {
+        "roomId": "room-6",
+        "time": "18:30",
+        "movieId": "hexed"
+      },
+      {
+        "roomId": "room-1",
+        "time": "19:00",
+        "movieId": "dark-knight"
+      },
+      {
+        "roomId": "room-3",
+        "time": "19:15",
+        "movieId": "callmebyyourname"
+      },
+      {
+        "roomId": "room-2",
+        "time": "19:45",
+        "movieId": "the-odyssey"
+      },
+      {
+        "roomId": "room-7",
+        "time": "19:45",
+        "movieId": "spider-man-brand-new-day"
+      },
+      {
+        "roomId": "room-4",
+        "time": "20:15",
+        "movieId": "hexed"
+      },
+      {
+        "roomId": "room-5",
+        "time": "20:15",
+        "movieId": "dark-knight"
+      },
+      {
+        "roomId": "room-6",
+        "time": "20:30",
+        "movieId": "callmebyyourname"
+      },
+      {
+        "roomId": "room-3",
+        "time": "21:45",
+        "movieId": "the-odyssey"
+      },
+      {
+        "roomId": "room-1",
+        "time": "22:00",
+        "movieId": "spider-man-brand-new-day"
+      },
+      {
+        "roomId": "room-4",
+        "time": "22:15",
+        "movieId": "the-odyssey"
+      },
+      {
+        "roomId": "room-7",
+        "time": "22:30",
+        "movieId": "the-odyssey"
+      }
+    ],
     "offlineSoldByRoom": {
-      "room-1": ["A3", "A4", "C5", "E6", "E7"],
-      "room-2": ["B3", "B4", "D5"]
+      "room-1": [
+        "A3",
+        "A4",
+        "C5",
+        "E6",
+        "E7"
+      ],
+      "room-2": [
+        "B3",
+        "B4",
+        "D5"
+      ],
+      "room-3": [
+        "B2",
+        "B3",
+        "D4"
+      ],
+      "room-4": [
+        "C3",
+        "C4",
+        "E5"
+      ],
+      "room-5": [
+        "A4",
+        "D3",
+        "D4"
+      ],
+      "room-6": [
+        "B2",
+        "B3",
+        "D4"
+      ],
+      "room-7": [
+        "C3",
+        "C4",
+        "E5"
+      ]
     }
   }
 }

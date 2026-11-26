@@ -80,9 +80,7 @@ export const seedDatabase = async ({ closeConnection = true } = {}) => {
   await Coupon.insertMany(initialCoupons);
 
   const showingMovies = initialMovies.filter((m) => m.status === "showing");
-  const { daysCount, price, vipPrice, timesByRoom } = showConfig;
-  const times1 = timesByRoom["room-1"];
-  const times2 = timesByRoom["room-2"];
+  const { daysCount, price, vipPrice, timesByRoom, dailySchedule } = showConfig;
   const shows = [];
 
   for (let dayIndex = 0; dayIndex < daysCount; dayIndex++) {
@@ -90,27 +88,38 @@ export const seedDatabase = async ({ closeConnection = true } = {}) => {
     d.setDate(d.getDate() + dayIndex);
     const dateStr = localDate(d);
 
-    showingMovies.forEach((movie, i) => {
-      shows.push({
-        _id: `${dateStr}-${movie.id}-1`,
-        movieId: movie.id,
-        roomId: "room-1",
-        date: dateStr,
-        time: times1[i % times1.length],
-        price,
-        vipPrice,
+    if (Array.isArray(dailySchedule) && dailySchedule.length > 0) {
+      dailySchedule.forEach((slot) => {
+        const suffix = slot.roomId.replace(/^room-/, "");
+        const timeTag = slot.time.replace(":", "");
+        shows.push({
+          _id: `${dateStr}-${slot.movieId}-${suffix}-${timeTag}`,
+          movieId: slot.movieId,
+          roomId: slot.roomId,
+          date: dateStr,
+          time: slot.time,
+          price,
+          vipPrice,
+        });
       });
-
-      shows.push({
-        _id: `${dateStr}-${movie.id}-2`,
-        movieId: movie.id,
-        roomId: "room-2",
-        date: dateStr,
-        time: times2[i % times2.length],
-        price,
-        vipPrice,
+    } else {
+      showingMovies.forEach((movie, i) => {
+        initialRooms.forEach((room, roomIdx) => {
+          const roomTimes = timesByRoom[room.id] || [];
+          if (roomTimes.length === 0) return;
+          const suffix = room.id.replace(/^room-/, "") || String(roomIdx + 1);
+          shows.push({
+            _id: `${dateStr}-${movie.id}-${suffix}`,
+            movieId: movie.id,
+            roomId: room.id,
+            date: dateStr,
+            time: roomTimes[i % roomTimes.length],
+            price,
+            vipPrice,
+          });
+        });
       });
-    });
+    }
   }
 
   await Show.insertMany(shows);
