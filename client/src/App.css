@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --p-bg: #f8f6f0;
   --p-surface: #eeece5;
   --p-card: #fbfaf5;
@@ -39,6 +40,7 @@
   --showtime-hover: #f3e9df;
 }
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --p-bg: #141311;
   --p-surface: #1e1c18;
   --p-card: #1a1916;
@@ -434,6 +436,7 @@
   width: 320px;
 }
 .search-field > input {
+  color: var(--ink);
   width: 100%;
   min-width: 0;
   outline: none;
@@ -457,6 +460,7 @@
 .filter-row select,
 .filter-row input {
   background: transparent;
+  color: var(--ink);
   border: 1px solid var(--line);
   padding: 12px;
   font-size: 14px;
@@ -495,6 +499,7 @@
   max-width: 760px;
 }
 .date-button {
+  color: var(--ink);
   padding: 14px 20px;
   border: 1px solid var(--line);
   background: transparent;
@@ -520,7 +525,7 @@
   border-color: var(--ink);
 }
 .date-button.selected span {
-  color: #d4d0c4;
+  color: inherit;
 }
 .schedule-tools {
   display: flex;
