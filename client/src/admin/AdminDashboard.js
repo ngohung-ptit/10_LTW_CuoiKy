@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { useApp } from "../context";
-import { days, money, dateLabel, showDate } from "../data";
+import { days, money, dateLabel } from "../data";
 import { api, getToken } from "../api";
-import { PageHeading } from "../components";
+import { Notice, PageHeading } from "../components";
 
 export const AdminDashboard = () => {
-  const { movies, tickets, shows } = useApp();
   const [date, setDate] = useState("");
   const [serverAnalytics, setServerAnalytics] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!getToken()) return undefined;
     let active = true;
+    setServerAnalytics(null);
+    setError("");
     const query = date ? `?date=${encodeURIComponent(date)}` : "";
     Promise.all([
       api.get(`/analytics/dashboard${query}`),
@@ -23,65 +24,23 @@ export const AdminDashboard = () => {
           setServerAnalytics({ dashboard, byMovie, byDate });
         }
       })
-      .catch(() => {
-        if (active) setServerAnalytics(null);
+      .catch((err) => {
+        if (active) setError(err.message);
       });
     return () => {
       active = false;
     };
   }, [date]);
 
-  const confirmed = useMemo(
-    () =>
-      tickets.filter(
-        (t) => t.status === "confirmed" && (!date || t.show?.date === date)
-      ),
-    [tickets, date]
-  );
-
-  const localRevenue = confirmed.reduce((sum, t) => sum + t.total, 0);
-  const localSeats = confirmed.reduce((sum, t) => sum + (t.seats?.length || 0), 0);
-  const localUpcoming = shows.filter(
-    (s) => showDate(s) > new Date() && (!date || s.date === date)
-  ).length;
-
-  const grouped = useMemo(() => {
-    if (serverAnalytics?.byMovie) {
-      return serverAnalytics.byMovie;
-    }
-    return movies.map((movie) => {
-      const list = confirmed.filter((t) => t.movieId === movie.id);
-      return {
-        movieId: movie.id,
-        title: movie.title,
-        total: list.reduce((sum, t) => sum + t.total, 0),
-        seats: list.reduce((sum, t) => sum + (t.seats?.length || 0), 0),
-      };
-    });
-  }, [serverAnalytics, movies, confirmed]);
+  const grouped = serverAnalytics?.byMovie || [];
 
   const daily = useMemo(() => {
-    if (serverAnalytics?.byDate) {
-      const byDateMap = new Map(serverAnalytics.byDate.map((item) => [item.date, item.total]));
-      return days.map((day) => ({
-        date: day,
-        total: byDateMap.get(day) || 0,
-      }));
-    }
-    return days.map((day) => ({
-      date: day,
-      total: tickets
-        .filter((t) => t.status === "confirmed" && t.show?.date === day)
-        .reduce((sum, t) => sum + t.total, 0),
-    }));
-  }, [serverAnalytics, tickets]);
+    const byDateMap = new Map((serverAnalytics?.byDate || []).map((item) => [item.date, item.total]));
+    return days.map((day) => ({ date: day, total: byDateMap.get(day) || 0 }));
+  }, [serverAnalytics]);
 
-  const stats = serverAnalytics?.dashboard || {
-    totalRevenue: localRevenue,
-    confirmedCount: confirmed.length,
-    totalSeats: localSeats,
-    upcomingShowsCount: localUpcoming,
-  };
+  const stats = serverAnalytics?.dashboard;
+  if (!stats) return <Notice error={Boolean(error)}>{error || "Đang tải thống kê..."}</Notice>;
 
   const maxDaily = Math.max(1, ...daily.map((d) => d.total));
 

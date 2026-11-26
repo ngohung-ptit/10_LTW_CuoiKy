@@ -21,9 +21,8 @@ export const TicketsPage = () => {
   const handleConfirmCancel = async (ticketId) => {
     setErrorMessage("");
     try {
-      const outcome = cancelTicket(ticketId);
-      const success =
-        outcome && typeof outcome.then === "function" ? await outcome : outcome;
+      setMessage("");
+      const success = await cancelTicket(ticketId);
       setMessage(
         success
           ? "Vé đã được hủy. Ghế đã được trả lại."

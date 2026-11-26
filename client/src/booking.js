@@ -6,17 +6,11 @@ import { io } from "socket.io-client";
 import { Check, Info, Tag } from "lucide-react";
 import { useApp, useOccupied } from "./context";
 import { useCountdown } from "./hooks";
-import { money, dateLabel, showDate, parseVipRows, initialCoupons } from "./data";
+import { money, dateLabel, showDate, parseVipRows } from "./data";
 import { api, getToken, SOCKET_BASE } from "./api";
 import { clearBooking, removeSeats, startBooking, toggleSeat } from "./store";
 import { Arrow, Breadcrumb, Button, Notice, Steps, Timer } from "./components";
 import { NotFoundPage } from "./pages/NotFoundPage";
-
-const OFFLINE_COUPONS = Object.fromEntries(
-  initialCoupons
-    .filter((coupon) => coupon.isActive !== false)
-    .map((coupon) => [coupon.code, coupon]),
-);
 
 export const SeatMap = ({ room, occupied, selected, onSelect }) => {
   const vipRows = useMemo(() => parseVipRows(room?.vipRows), [room?.vipRows]);
@@ -304,16 +298,8 @@ export const BookingSession = ({ show, movie, room }) => {
   const total = Math.max(0, rawTotal - discount);
 
   const applyCoupon = async (code) => {
-    if (getToken() || process.env.NODE_ENV !== "test") {
-      const verified = await api.post("/coupons/verify", { code });
-      setAppliedCoupon(verified);
-      return;
-    }
-    const localCoupon = OFFLINE_COUPONS[code];
-    if (!localCoupon) {
-      throw new Error("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
-    }
-    setAppliedCoupon(localCoupon);
+    const verified = await api.post("/coupons/verify", { code });
+    setAppliedCoupon(verified);
   };
 
   const select = (id) => {
@@ -357,16 +343,10 @@ export const BookingSession = ({ show, movie, room }) => {
     }
 
     const couponCode = appliedCoupon?.code || null;
-    if (!getToken() && process.env.NODE_ENV === "test") {
-      const result = book(show, selected, total, couponCode);
-      finishBooking(result);
-      return;
-    }
-
     setSubmitting(true);
     setError("");
     try {
-      const result = await book(show, selected, total, couponCode);
+      const result = await book(show, selected, couponCode);
       finishBooking(result);
     } catch (err) {
       setError(err.message || "Không thể đặt vé. Vui lòng thử lại.");

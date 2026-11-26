@@ -4,6 +4,8 @@ Hệ thống web full-stack đặt vé xem phim trực tuyến: Khách xem lịc
 
 ---
 
+Dữ liệu tài khoản, phim, phòng, suất chiếu, vé và thống kê được lấy từ API. Frontend chỉ xác nhận đặt/hủy vé sau khi server xử lý thành công; mất kết nối sẽ hiển thị lỗi. `localStorage` chỉ lưu lựa chọn sáng/tối (`udu-theme`); JWT và thông tin phiên đăng nhập lưu trong `sessionStorage`. Dữ liệu tài khoản/vé cục bộ của phiên bản cũ không còn được sử dụng và không tự chuyển vào database. Mã QR, mã giảm giá và cập nhật ghế qua Socket.IO/polling vẫn được giữ lại.
+
 ## Cấu trúc thư mục
 
 ```text
@@ -20,8 +22,8 @@ Hệ thống web full-stack đặt vé xem phim trực tuyến: Khách xem lịc
 │   │   ├── booking.js       Sơ đồ ghế động, tính tiền useMemo, mã giảm giá, đếm ngược 5 phút
 │   │   ├── components.js    Các components tái sử dụng (Header, Footer, Button, Field,...)
 │   │   ├── context.js       Context API dữ liệu dùng chung, theme sáng/tối & đồng bộ API
-│   │   ├── data.js          Hàm tiện ích định dạng ngày giờ, tiền tệ, parseVipRows & khởi tạo fallback từ seedData.json
-│   │   ├── seedData.json    Bản sao đồng bộ tự động từ server/src/seed/seedData.json cho chế độ fallback/test
+│   │   ├── data.js          Hàm tiện ích định dạng ngày giờ, tiền tệ, parseVipRows và cấu hình lịch
+│   │   ├── seedData.json    Bản sao cấu hình seed được đồng bộ tự động từ server
 │   │   ├── hooks.js         Custom hooks (useLocalStorage, useDebounce, useCountdown)
 │   │   └── store.js         Redux Toolkit quản lý ghế đang chọn & phiên đặt vé
 │   └── package.json
